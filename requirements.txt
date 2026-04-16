@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+gunicorn
+python-dotenv
+requests
+motor
+passlib[bcrypt]
+python-jose[cryptography]
+beautifulsoup4
+qrcode[pil]
+python-multipart
