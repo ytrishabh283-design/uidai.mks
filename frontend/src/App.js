@@ -16,7 +16,7 @@ function App() {
     
     if (token && userData) {
       setIsAuthenticated(true);
-      setUser(JSON.parse(userData));
+      JSON.parse(localStorage.getItem("user") || "null"));
     }
     setLoading(false);
   }, []);  // Empty dependency array is intentional - only check on mount
