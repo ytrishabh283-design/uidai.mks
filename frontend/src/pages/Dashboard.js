@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Home from './Home';
+import profile from './profile';
 import ECMPReport from './ECMPReport';
 import UCReport from './UCReport';
 import EODRequest from './EODRequest';
@@ -46,6 +47,7 @@ export default function Dashboard({ user, onLogout }) {
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home user={user} />} />
+            <Route path="/profile" element={<profile user{user} />} />
             <Route path="/ecmp-report" element={<ECMPReport user={user} />} />
             <Route path="/uc-report" element={<UCReport user={user} />} />
             <Route path="/eod-request" element={<EODRequest user={user} />} />
