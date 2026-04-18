@@ -1,3 +1,5 @@
+from flask_cors import CORS
+CORS(app)
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
