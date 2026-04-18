@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Eye, EyeOff, User, Lock, LogIn } from 'lucide-react';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 const API = `${BACKEND_URL}/api`;
 
 export default function Login({ onLogin }) {
