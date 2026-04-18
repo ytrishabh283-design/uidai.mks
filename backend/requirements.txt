@@ -3,7 +3,8 @@ uvicorn
 python-dotenv
 motor
 passlib[bcrypt]
-python-jose
+bcrypt==4.0.1
+python-jose[cryptography]
 beautifulsoup4
 qrcode
 python-multipart
