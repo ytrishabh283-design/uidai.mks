@@ -1,11 +1,10 @@
 fastapi
 uvicorn
-gunicorn
 python-dotenv
-requests
 motor
 passlib[bcrypt]
-python-jose[cryptography]
+python-jose
 beautifulsoup4
-qrcode[pil]
+qrcode
 python-multipart
+email-validator
