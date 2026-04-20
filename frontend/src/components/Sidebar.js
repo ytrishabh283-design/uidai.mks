@@ -24,12 +24,8 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
         isOpen ? 'w-64' : 'w-20'
       } bg-gradient-to-b from-indigo-600 to-indigo-800 text-white transition-all duration-300 flex flex-col`}
     >
-      {/* Logo/Header */}
       <div className="p-6 flex items-center justify-between">
-        <Link
-          to="/dashboard/profile"
-          className="flex items-center gap-3 cursor-pointer"
-        >
+        <Link to="/dashboard/profile" className="flex items-center gap-3 cursor-pointer">
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
             <User className="w-6 h-6 text-indigo-600" />
           </div>
@@ -50,7 +46,6 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
         </button>
       </div>
 
-      {/* User Info */}
       {isOpen && (
         <div className="px-6 py-4 bg-indigo-700/50 mb-2">
           <p className="font-medium truncate">{user?.name}</p>
@@ -58,7 +53,6 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
         </div>
       )}
 
-      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => (
           <NavLink
@@ -84,7 +78,6 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
         ))}
       </nav>
 
-      {/* Logout Button */}
       <div className="p-3">
         <button
           onClick={onLogout}
