@@ -1,11 +1,14 @@
-export default function Profile() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Profile Page</h1>
-      <div className="bg-white rounded-xl shadow p-6">
-        <p><strong>Name:</strong> Rishabh Pathak</p>
-        <p><strong>Staff ID:</strong> JEPC_MKS_GAR_NS900297</p>
-      </div>
+<Link to="/dashboard/profile" className="block">
+  <div className="flex items-center gap-3 cursor-pointer">
+    
+    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+      <span>👤</span>
     </div>
-  );
-}
+
+    <div>
+      <h2 className="text-white font-bold text-xl">UIDAI</h2>
+      <p className="text-white/80 text-sm">Staff Portal</p>
+    </div>
+
+  </div>
+</Link>
