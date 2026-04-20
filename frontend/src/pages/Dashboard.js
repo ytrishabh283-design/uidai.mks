@@ -1,6 +1,18 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { Link } from 'react-router-dom';
+import { User } from 'lucide-react';
+<Link to="/dashboard/profile" className="flex items-center gap-3">
+  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+    <User className="w-6 h-6 text-white" />
+  </div>
+
+  <div>
+    <h2 className="text-white font-bold text-xl">UIDAI</h2>
+    <p className="text-white/80 text-sm">Staff Portal</p>
+  </div>
+</Link>
 import Home from './Home';
 import Profile from './Profile';
 import ECMPReport from './ECMPReport';
