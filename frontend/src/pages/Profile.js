@@ -24,6 +24,7 @@ export default function Profile({ user }) {
         name: user?.name || "",
         email: user?.email || "",
         mobile: "",
+        opratorid: user?.staff_id||"",
         stationId: user?.staff_id || "",
         aadhaar: "",
         district: "",
@@ -59,6 +60,7 @@ export default function Profile({ user }) {
       email: prompt("Email:", profile.email) || profile.email,
       mobile: prompt("Mobile:", profile.mobile) || profile.mobile,
       stationId: prompt("Station ID:", profile.stationId) || profile.stationId,
+      opratorId: prompt("oprator ID:", profile.opratorId) || profile.opratorId,
       aadhaar: prompt("Aadhaar:", profile.aadhaar) || profile.aadhaar,
       district: prompt("District:", profile.district) || profile.district,
       brc: prompt("BRC:", profile.brc) || profile.brc
@@ -93,6 +95,7 @@ export default function Profile({ user }) {
       <div className="p-6 space-y-3 text-sm">
         <Detail label="Mobile" value={profile.mobile} />
         <Detail label="Station ID" value={profile.stationId} />
+        <Detail label="Oprator ID" value={profile.opratorId} />
         <Detail label="Aadhaar" value={profile.aadhaar} />
         <Detail label="District" value={profile.district} />
         <Detail label="BRC" value={profile.brc} />
