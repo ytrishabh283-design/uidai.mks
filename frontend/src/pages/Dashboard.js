@@ -47,7 +47,7 @@ export default function Dashboard({ user, onLogout }) {
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home user={user} />} />
-            <Route path="/profile" element={<profile user={user} />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="/ecmp-report" element={<ECMPReport user={user} />} />
             <Route path="/uc-report" element={<UCReport user={user} />} />
             <Route path="/eod-request" element={<EODRequest user={user} />} />
