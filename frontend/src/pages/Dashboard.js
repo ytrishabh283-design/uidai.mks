@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Home from './Home';
-import profile from './profile';
+import Profile from './Profile';
 import ECMPReport from './ECMPReport';
 import UCReport from './UCReport';
 import EODRequest from './EODRequest';
@@ -29,6 +29,7 @@ export default function Dashboard({ user, onLogout }) {
                 <h1 className="text-2xl font-bold text-gray-900">UIDAI Staff Portal</h1>
                 <p className="text-sm text-gray-600 mt-1">Welcome, {user?.name}</p>
               </div>
+
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
@@ -43,7 +44,7 @@ export default function Dashboard({ user, onLogout }) {
           <Routes>
             <Route path="/" element={<Navigate to="home" replace />} />
             <Route path="home" element={<Home user={user} />} />
-            <Route path="profile" element={<profile />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="ecmp-report" element={<ECMPReport user={user} />} />
             <Route path="uc-report" element={<UCReport user={user} />} />
             <Route path="eod-request" element={<EODRequest user={user} />} />
