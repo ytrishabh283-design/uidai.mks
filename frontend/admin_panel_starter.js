@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 const BACKEND_URL = "https://staff-system-51i3.onrender.com";
 
 const response = await axios.post(`${BACKEND_URL}/login`, {
-  username: formData.username_id,
+  username: formData.Staff_id,
   password: formData.password
 });
 const stats = [
