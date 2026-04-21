@@ -11,10 +11,18 @@ import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 
 const BACKEND_URL = "https://staff-system-51i3.onrender.com";
-
-const response = await axios.post(`${BACKEND_URL}/login`, {
-  username: formData.Staff_id,
+// LOGIN
+await axios.post(`${API}/login`, {
+  username: formData.staff_id,
   password: formData.password
+});
+
+// REGISTER
+await axios.post(`${API}/register`, {
+  username: formData.staff_id,
+  name: formData.name,
+  password: formData.password,
+  email: formData.email
 });
 const stats = [
   { title: 'Total Users', value: '1,284', change: '+12%', icon: Users },
