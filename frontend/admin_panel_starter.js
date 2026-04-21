@@ -10,6 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
 
+const BACKEND_URL = "https://staff-system-51i3.onrender.com";
+
+const response = await axios.post(`${BACKEND_URL}/login`, {
+  username: formData.username_id,
+  password: formData.password
+});
 const stats = [
   { title: 'Total Users', value: '1,284', change: '+12%', icon: Users },
   { title: 'Today Reports', value: '86', change: '+8%', icon: FileText },
