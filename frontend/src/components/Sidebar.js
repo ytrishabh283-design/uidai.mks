@@ -18,6 +18,8 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
     { to: '/dashboard/wallet', icon: Wallet, label: 'Wallet', badge: null },
   ];
 
+  const profileImage = user?.profileImage || '';
+
   return (
     <div
       className={`${
@@ -26,8 +28,16 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
     >
       <div className="p-6 flex items-center justify-between">
         <Link to="/dashboard/profile" className="flex items-center gap-3 cursor-pointer">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-            <User className="w-6 h-6 text-indigo-600" />
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <User className="w-6 h-6 text-indigo-600" />
+            )}
           </div>
 
           {isOpen && (
@@ -69,11 +79,6 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
           >
             <item.icon className={`${isOpen ? 'w-5 h-5' : 'w-6 h-6'} flex-shrink-0`} />
             {isOpen && <span className="font-medium">{item.label}</span>}
-            {isOpen && item.badge && (
-              <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                {item.badge}
-              </span>
-            )}
           </NavLink>
         ))}
       </nav>
@@ -90,4 +95,4 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
       </div>
     </div>
   );
-}
+        }
