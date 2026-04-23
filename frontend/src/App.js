@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import './App.css';
+import '@/App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -10,30 +10,20 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if user is already logged in
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-
-    try {
-      if (token && userData && userData !== 'undefined' && userData !== 'null') {
-        const parsedUser = JSON.parse(userData);
-        setIsAuthenticated(true);
-        setUser(parsedUser);
-      } else {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    } catch (error) {
-      console.error('Invalid user data in localStorage:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setIsAuthenticated(false);
-      setUser(null);
+    
+    if (token && userData) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(userData));
     }
-
     setLoading(false);
-  }, []);
+  }, []);  // Empty dependency array is intentional - only check on mount
 
   const handleLogin = (token, userData) => {
+    // TODO: Security - Move to httpOnly cookies in production
+    // localStorage is vulnerable to XSS attacks
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setIsAuthenticated(true);
@@ -41,6 +31,7 @@ function App() {
   };
 
   const handleLogout = () => {
+    // Clear authentication data
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsAuthenticated(false);
@@ -66,29 +57,17 @@ function App() {
             path="/login"
             element={
               isAuthenticated ? (
-                <Navigate to="/dashboard/home" replace />
+                <Navigate to="/" replace />
               ) : (
                 <Login onLogin={handleLogin} />
               )
             }
           />
-
           <Route
-            path="/dashboard/*"
+            path="/*"
             element={
               isAuthenticated ? (
                 <Dashboard user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-
-          <Route
-            path="*"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard/home" replace />
               ) : (
                 <Navigate to="/login" replace />
               )
