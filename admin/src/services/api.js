@@ -1,4 +1,19 @@
 import axios from "axios";
+import { deleteUser, getUsers } from "../services/api";
+const handleDelete = async (id) => {
+  try {
+    await deleteUser(id);
+    setUsers(users.filter((u) => u.id !== id));
+  } catch (err) {
+    alert("Delete failed");
+  }
+};
+<button
+  onClick={() => handleDelete(user.id)}
+  className="bg-red-500 text-white px-3 py-1 rounded"
+>
+  Delete
+</button>
 // USERS CRUD
 
 export const getUsers = async () => {
