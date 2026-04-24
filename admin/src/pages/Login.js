@@ -6,7 +6,7 @@ export default function Login({ onLogin }) {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    email: "",
+    staff_id: "",
     password: "",
   });
 
@@ -14,10 +14,10 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    setForm((prev) => ({
-      ...prev,
+    setForm({
+      ...form,
       [e.target.name]: e.target.value,
-    }));
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -28,17 +28,13 @@ export default function Login({ onLogin }) {
     try {
       const data = await loginAdmin(form);
 
-      const token = data?.token || "demo-token";
-      const adminData = data?.admin || {
-        name: "Admin",
-        email: form.email,
-        role: "Super Admin",
-      };
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("admin", JSON.stringify(data.user));
 
-      onLogin(token, adminData);
+      onLogin(data.access_token, data.user);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message || "Login failed");
+      setError("Invalid Staff ID or Password");
     } finally {
       setLoading(false);
     }
@@ -47,31 +43,40 @@ export default function Login({ onLogin }) {
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800">Admin Login</h1>
-        <p className="text-center text-gray-500 mt-2">Sign in to control your panel</p>
+        <h1 className="text-3xl font-bold text-center text-gray-800">
+          Admin Login
+        </h1>
+
+        <p className="text-center text-gray-500 mt-2">
+          Sign in to control your panel
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Staff ID
+            </label>
             <input
-              type="email"
-              name="email"
-              value={form.email}
+              type="text"
+              name="staff_id"
+              value={form.staff_id}
               onChange={handleChange}
-              placeholder="admin@example.com"
+              placeholder="Enter Staff ID"
               className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder="Enter password"
+              placeholder="Enter Password"
               className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -86,16 +91,12 @@ export default function Login({ onLogin }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-
-        <div className="mt-6 text-sm text-gray-500 text-center">
-          Demo login bhi API se connect ho sakta hai
-        </div>
       </div>
     </div>
   );
-}
+                }
