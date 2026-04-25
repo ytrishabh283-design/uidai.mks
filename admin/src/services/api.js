@@ -17,11 +17,35 @@ export const loginAdmin = async (data) => {
     staff_id: data.staff_id,
     password: data.password,
   });
+  return res.data;
+};
 
+export const getCurrentUser = async () => {
+  const res = await API.get("/auth/me");
   return res.data;
 };
 
 export const getReports = async () => {
   const res = await API.get("/reports");
+  return res.data;
+};
+
+export const getUsers = async () => {
+  const res = await API.get("/admin/users");
+  return res.data;
+};
+
+export const createUser = async (data) => {
+  const res = await API.post("/admin/users", data);
+  return res.data;
+};
+
+export const updateUser = async (id, data) => {
+  const res = await API.put(`/admin/users/${id}`, data);
+  return res.data;
+};
+
+export const deleteUser = async (id) => {
+  const res = await API.delete(`/admin/users/${id}`);
   return res.data;
 };
