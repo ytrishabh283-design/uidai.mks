@@ -29,7 +29,10 @@ export const getUsers = async () => {
   const res = await API.get("/admin/users");
   return res.data;
 };
-
+export const getAllRequests = async () => {
+  const res = await API.get("/admin/requests");
+  return res.data;
+};
 export const createUser = async (data) => {
   const res = await API.post("/admin/users", data);
   return res.data;
