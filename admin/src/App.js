@@ -7,7 +7,7 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
-<Route path="/dashboard" element={<AdminDashboard />} />
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [admin, setAdmin] = useState(null);
