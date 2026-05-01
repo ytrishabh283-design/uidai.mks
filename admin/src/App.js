@@ -66,7 +66,16 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
+<Route
+  path="/requests"
+  element={
+    <ProtectedRoute isAuthenticated={isAuthenticated}>
+      <Layout admin={admin} onLogout={handleLogout}>
+        <Requests />
+      </Layout>
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/users"
           element={
