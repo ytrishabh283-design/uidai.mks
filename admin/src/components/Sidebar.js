@@ -15,6 +15,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onLogout }) {
     { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { label: "Users", path: "/users", icon: <Users size={20} /> },
     { label: "Reports", path: "/reports", icon: <FileText size={20} /> },
+    { name: "EOD Requests", path: "/requests", icon: <FileText size={20} /> }
     { label: "Settings", path: "/settings", icon: <Settings size={20} /> },
   ];
 
