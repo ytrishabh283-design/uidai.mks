@@ -11,7 +11,10 @@ API.interceptors.request.use((config) => {
   }
   return config;
 });
-
+export const getReports = async () => {
+  const res = await API.get("/reports");
+  return res.data;
+};
 export const loginAdmin = async (data) => {
   const res = await API.post("/admin/login", data);
   return res.data;
