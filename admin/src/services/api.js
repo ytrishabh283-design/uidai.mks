@@ -13,7 +13,7 @@ API.interceptors.request.use((config) => {
 });
 
 export const loginAdmin = async (data) => {
-  const res = await API.post("/auth/login", {
+  const res = await API.post("/admin/login", {
     staff_id: data.staff_id,
     password: data.password,
   });
