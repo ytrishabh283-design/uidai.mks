@@ -217,7 +217,7 @@ export default function Wallet({ user }) {
                   <div className="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
                     <p className="text-sm text-gray-600 mb-2 text-center">Scan to pay ₹{loadAmount}</p>
                     <img src={qrCode} alt="UPI QR Code" className="w-full max-w-xs mx-auto" />
-                    <p className="text-xs text-gray-500 text-center mt-2">UPI ID: 7368087310@ybl</p>
+                    <p className="text-xs text-gray-500 text-center mt-2">Please Make your payment</p>
                   </div>
 
                   <div>
