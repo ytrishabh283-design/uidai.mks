@@ -205,9 +205,10 @@ export default function Users() {
                 <tr className="border-b text-left text-gray-500 text-sm">
                   <th className="py-3">Staff ID</th>
                   <th className="py-3">Name</th>
-                  <th className="py-3">Activity</th>
+                  <th className="py-3">Brc[District]</th>
                   <th className="py-3">Joining Date</th>
                   <th className="py-3">Status</th>
+                  <th className="py-3">Activity</th>
                   <th className="py-3">Action</th>
                 </tr>
               </thead>
