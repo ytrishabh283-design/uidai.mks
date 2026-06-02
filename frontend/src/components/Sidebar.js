@@ -1,9 +1,43 @@
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Calendar, AlertCircle, Wallet, LogOut, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Home,
+  Calendar,
+  AlertCircle,
+  Wallet,
+  LogOut,
+  User,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 
 export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
+  const [avatar, setAvatar] = useState("");
+
+  useEffect(() => {
+    const loadProfilePhoto = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem("profileData"));
+        setAvatar(saved?.avatar || "");
+      } catch {
+        setAvatar("");
+      }
+    };
+
+    loadProfilePhoto();
+
+    window.addEventListener("profileUpdated", loadProfilePhoto);
+    window.addEventListener("storage", loadProfilePhoto);
+
+    return () => {
+      window.removeEventListener("profileUpdated", loadProfilePhoto);
+      window.removeEventListener("storage", loadProfilePhoto);
+    };
+  }, []);
+
   const navItems = [
     { to: '/home', icon: Home, label: 'HOME', badge: null },
+    { to: '/profile', icon: User, label: 'Profile', badge: null },
     { to: '/eod-request', icon: Calendar, label: 'EOD Request', badge: null },
     { to: '/missing-eod', icon: AlertCircle, label: 'Missing EOD', badge: null },
     { to: '/wallet', icon: Wallet, label: 'Wallet', badge: null },
@@ -11,22 +45,34 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
 
   return (
     <>
-      <div className={`${
-        isOpen ? 'w-64' : 'w-20'
-      } bg-gradient-to-b from-indigo-600 to-indigo-800 text-white transition-all duration-300 flex flex-col`}>
+      <div
+        className={`${
+          isOpen ? 'w-64' : 'w-20'
+        } bg-gradient-to-b from-indigo-600 to-indigo-800 text-white transition-all duration-300 flex flex-col`}
+      >
         {/* Logo/Header */}
         <div className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-indigo-600" />
+          <NavLink to="/profile" className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
+              {avatar ? (
+                <img
+                  src={avatar}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-7 h-7 text-indigo-600" />
+              )}
             </div>
+
             {isOpen && (
               <div>
                 <h2 className="font-bold text-lg">UIDAI</h2>
                 <p className="text-xs text-indigo-200">Staff Portal</p>
               </div>
             )}
-          </div>
+          </NavLink>
+
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="hover:bg-indigo-700 p-1 rounded transition-colors"
@@ -37,10 +83,10 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
 
         {/* User Info */}
         {isOpen && (
-          <div className="px-6 py-4 bg-indigo-700/50 mb-2">
+          <NavLink to="/profile" className="block px-6 py-4 bg-indigo-700/50 mb-2">
             <p className="font-medium truncate">{user?.name}</p>
             <p className="text-sm text-indigo-200 truncate">ID: {user?.staff_id}</p>
-          </div>
+          </NavLink>
         )}
 
         {/* Navigation */}
@@ -59,9 +105,8 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
               title={!isOpen ? item.label : ''}
             >
               <item.icon className={`${isOpen ? 'w-5 h-5' : 'w-6 h-6'} flex-shrink-0`} />
-              {isOpen && (
-                <span className="font-medium">{item.label}</span>
-              )}
+              {isOpen && <span className="font-medium">{item.label}</span>}
+
               {isOpen && item.badge && (
                 <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                   {item.badge}
