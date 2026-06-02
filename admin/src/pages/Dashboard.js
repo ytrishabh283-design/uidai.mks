@@ -54,7 +54,7 @@ export default function AdminDashboard() {
       color: "from-green-500 to-green-700",
     },
     {
-      title: "EOD Not Uploaded",
+      title: "Pending EOD Report",
       value: stats.eod_not_uploaded,
       icon: AlertTriangle,
       color: "from-red-500 to-orange-600",
