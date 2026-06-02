@@ -10,6 +10,7 @@ export default function Users() {
     name: "",
     email: "",
     password: "",
+    joining_date: "",
     is_active: true,
   });
 
@@ -47,6 +48,7 @@ export default function Users() {
       name: "",
       email: "",
       password: "",
+      joining_date: "",
       is_active: true,
     });
     setEditingId(null);
@@ -63,6 +65,7 @@ export default function Users() {
           staff_id: form.staff_id,
           name: form.name,
           email: form.email,
+          joining_date: form.joining_date,
           is_active: form.is_active,
         };
 
@@ -91,6 +94,7 @@ export default function Users() {
       name: user.name || "",
       email: user.email || "",
       password: "",
+      joining_date: user.joining_date || "",
       is_active: user.is_active ?? true,
     });
   };
@@ -117,7 +121,7 @@ export default function Users() {
         {message && <div className="bg-green-100 text-green-700 p-3 rounded-xl mb-3">{message}</div>}
         {error && <div className="bg-red-100 text-red-700 p-3 rounded-xl mb-3">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
           <input
             name="staff_id"
             value={form.staff_id}
@@ -142,6 +146,15 @@ export default function Users() {
             onChange={handleChange}
             placeholder="Email"
             className="border px-4 py-3 rounded-xl"
+          />
+
+          <input
+            name="joining_date"
+            type="date"
+            value={form.joining_date}
+            onChange={handleChange}
+            className="border px-4 py-3 rounded-xl"
+            title="Joining Date"
           />
 
           <input
@@ -193,6 +206,7 @@ export default function Users() {
                   <th className="py-3">Staff ID</th>
                   <th className="py-3">Name</th>
                   <th className="py-3">Email</th>
+                  <th className="py-3">Joining Date</th>
                   <th className="py-3">Status</th>
                   <th className="py-3">Action</th>
                 </tr>
@@ -204,6 +218,7 @@ export default function Users() {
                     <td className="py-3">{user.staff_id}</td>
                     <td className="py-3 font-medium text-gray-800">{user.name}</td>
                     <td className="py-3 text-gray-600">{user.email || "-"}</td>
+                    <td className="py-3 text-gray-600">{user.joining_date || "-"}</td>
                     <td className="py-3">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -235,7 +250,7 @@ export default function Users() {
 
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="py-5 text-center text-gray-500">
+                    <td colSpan="6" className="py-5 text-center text-gray-500">
                       No users found
                     </td>
                   </tr>
