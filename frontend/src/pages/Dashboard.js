@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Profile from "./Profile";
 import Home from './Home';
 import ECMPReport from './ECMPReport';
 import UCReport from './UCReport';
