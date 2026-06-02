@@ -40,6 +40,7 @@ export default function Profile({ user }) {
   };
 
   // ===== Upload Photo =====
+  window.dispatchEvent(new Event("profileUpdated"));
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
