@@ -141,10 +141,10 @@ export default function Users() {
           />
 
           <input
-            name="email"
-            value={form.email}
+            name="Brc"
+            value={form.BRC}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder="Brc"
             className="border px-4 py-3 rounded-xl"
           />
 
