@@ -8,7 +8,7 @@ export default function Users() {
   const [form, setForm] = useState({
     staff_id: "",
     name: "",
-    email: "",
+    activity: "",
     password: "",
     joining_date: "",
     is_active: true,
@@ -46,7 +46,7 @@ export default function Users() {
     setForm({
       staff_id: "",
       name: "",
-      email: "",
+      activity: "",
       password: "",
       joining_date: "",
       is_active: true,
@@ -64,7 +64,7 @@ export default function Users() {
         const updateData = {
           staff_id: form.staff_id,
           name: form.name,
-          email: form.email,
+          activity: form.email,
           joining_date: form.joining_date,
           is_active: form.is_active,
         };
@@ -92,7 +92,7 @@ export default function Users() {
     setForm({
       staff_id: user.staff_id || "",
       name: user.name || "",
-      email: user.email || "",
+      activity: user.email || "",
       password: "",
       joining_date: user.joining_date || "",
       is_active: user.is_active ?? true,
@@ -205,7 +205,7 @@ export default function Users() {
                 <tr className="border-b text-left text-gray-500 text-sm">
                   <th className="py-3">Staff ID</th>
                   <th className="py-3">Name</th>
-                  <th className="py-3">Email</th>
+                  <th className="py-3">Activity</th>
                   <th className="py-3">Joining Date</th>
                   <th className="py-3">Status</th>
                   <th className="py-3">Action</th>
