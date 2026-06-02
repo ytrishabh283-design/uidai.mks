@@ -37,7 +37,6 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
 
   const navItems = [
     { to: '/home', icon: Home, label: 'HOME', badge: null },
-    { to: '/profile', icon: User, label: 'Profile', badge: null },
     { to: '/eod-request', icon: Calendar, label: 'EOD Request', badge: null },
     { to: '/missing-eod', icon: AlertCircle, label: 'Missing EOD', badge: null },
     { to: '/wallet', icon: Wallet, label: 'Wallet', badge: null },
