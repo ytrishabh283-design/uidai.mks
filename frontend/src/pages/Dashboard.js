@@ -46,6 +46,7 @@ export default function Dashboard({ user, onLogout }) {
         <main className="flex-1 overflow-y-auto p-6">
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/profile" element={<Profile user={user} />} />
             <Route path="/home" element={<Home user={user} />} />
             <Route path="/ecmp-report" element={<ECMPReport user={user} />} />
             <Route path="/uc-report" element={<UCReport user={user} />} />
