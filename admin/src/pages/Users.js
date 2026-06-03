@@ -205,7 +205,7 @@ export default function Users() {
                 <tr className="border-b text-left text-gray-500 text-sm">
                   <th className="py-3">Staff ID</th>
                   <th className="py-3">Name</th>
-                  <th className="py-3">Brc[District]</th>
+                  <th className="py-3">{`${user.brc || ""} [${user.district || ""}]`}</th>
                   <th className="py-3">Joining Date</th>
                   <th className="py-3">Status</th>
                   <th className="py-3">Activity</th>
@@ -218,7 +218,7 @@ export default function Users() {
                   <tr key={user.id} className="border-b last:border-0">
                     <td className="py-3">{user.staff_id}</td>
                     <td className="py-3 font-medium text-gray-800">{user.name}</td>
-                    <td className="py-3 text-gray-600">{user.email || "-"}</td>
+                    <td className="py-3 text-gray-600">{user.{`${user.brc || ""} [${user.district || ""}]`} || "-"}</td>
                     <td className="py-3 text-gray-600">{user.joining_date || "-"}</td>
                     <td className="py-3">
                       <span
