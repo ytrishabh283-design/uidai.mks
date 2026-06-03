@@ -64,7 +64,7 @@ export default function Users() {
         const updateData = {
           staff_id: form.staff_id,
           name: form.name,
-          activity: form.email,
+          activity: form.brc [{.district}],
           joining_date: form.joining_date,
           is_active: form.is_active,
         };
@@ -74,10 +74,10 @@ export default function Users() {
         }
 
         await updateUser(editingId, updateData);
-        setMessage("User update ho gaya ✅");
+        setMessage("User Updated Successfully");
       } else {
         await createUser(form);
-        setMessage("User create ho gaya ✅");
+        setMessage("User created Successfully ✅");
       }
 
       resetForm();
@@ -92,7 +92,7 @@ export default function Users() {
     setForm({
       staff_id: user.staff_id || "",
       name: user.name || "",
-      activity: user.email || "",
+      activity: user.brc [{.district}] || "",
       password: "",
       joining_date: user.joining_date || "",
       is_active: user.is_active ?? true,
@@ -104,7 +104,7 @@ export default function Users() {
 
     try {
       await deleteUser(id);
-      setMessage("User delete ho gaya ✅");
+      setMessage("User deleted Successfully ✅");
       fetchUsers();
     } catch (err) {
       setError(err?.response?.data?.detail || "Delete failed");
@@ -142,7 +142,7 @@ export default function Users() {
 
           <input
             name="Brc"
-            value={form.BRC}
+            value={form.bRC}
             onChange={handleChange}
             placeholder="Brc"
             className="border px-4 py-3 rounded-xl"
