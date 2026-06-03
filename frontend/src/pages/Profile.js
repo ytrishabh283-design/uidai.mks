@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 
+const API_BASE =
+  process.env.REACT_APP_BACKEND_URL ||
+  process.env.REACT_APP_API_URL ||
+  "https://uidai-mks-gov-in.onrender.com";
+
 export default function Profile({ user }) {
   const [profile, setProfile] = useState({
     avatar: "",
@@ -7,40 +12,95 @@ export default function Profile({ user }) {
     email: "",
     mobile: "",
     stationId: "",
+    operatorId: "",
     aadhaar: "",
     district: "",
-    brc: ""
+    brc: "",
   });
 
-  // ===== Load Data =====
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const getInitialProfile = () => ({
+    avatar: "",
+    name: user?.name || "",
+    email: user?.email || "",
+    mobile: user?.mobile || "",
+    stationId: user?.station_id || user?.stationId || "",
+    operatorId: user?.operator_id || user?.operatorId || user?.staff_id || "",
+    aadhaar: user?.aadhaar || "",
+    district: user?.district || "",
+    brc: user?.brc || "",
+  });
+
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("profileData"));
+    const saved = localStorage.getItem("profileData");
 
     if (saved) {
-      setProfile(saved);
+      try {
+        const parsed = JSON.parse(saved);
+
+        setProfile({
+          ...getInitialProfile(),
+          ...parsed,
+          operatorId:
+            parsed.operatorId ||
+            parsed.opratorId ||
+            parsed.opratorid ||
+            user?.operator_id ||
+            user?.staff_id ||
+            "",
+        });
+      } catch {
+        setProfile(getInitialProfile());
+      }
     } else {
-      setProfile({
-        avatar: "",
-        name: user?.name || "",
-        email: user?.email || "",
-        mobile: "",
-        opratorid: user?.staff_id||"",
-        stationId: user?.staff_id || "",
-        aadhaar: "",
-        district: "",
-        brc: ""
-      });
+      setProfile(getInitialProfile());
     }
   }, [user]);
 
-  // ===== Save Data =====
-  const saveProfile = (data) => {
+  const saveProfile = async (data) => {
     setProfile(data);
     localStorage.setItem("profileData", JSON.stringify(data));
+    window.dispatchEvent(new Event("profileUpdated"));
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const payload = {
+      name: data.name || "",
+      email: data.email || "",
+      mobile: data.mobile || "",
+      station_id: data.stationId || "",
+      operator_id: data.operatorId || "",
+      aadhaar: data.aadhaar || "",
+      district: data.district || "",
+      brc: data.brc || "",
+    };
+
+    try {
+      setError("");
+      setMessage("");
+
+      const response = await fetch(`${API_BASE}/api/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Profile database me save nahi hua");
+      }
+
+      setMessage("Profile saved successfully ✅");
+    } catch (err) {
+      setError("Local profile save ho gaya, lekin database me save nahi hua.");
+    }
   };
 
-  // ===== Upload Photo =====
-  window.dispatchEvent(new Event("profileUpdated"));
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -53,7 +113,6 @@ export default function Profile({ user }) {
     reader.readAsDataURL(file);
   };
 
-  // ===== Edit Profile =====
   const handleEdit = () => {
     const updated = {
       ...profile,
@@ -61,10 +120,10 @@ export default function Profile({ user }) {
       email: prompt("Email:", profile.email) || profile.email,
       mobile: prompt("Mobile:", profile.mobile) || profile.mobile,
       stationId: prompt("Station ID:", profile.stationId) || profile.stationId,
-      opratorId: prompt("oprator ID:", profile.opratorId) || profile.opratorId,
+      operatorId: prompt("Operator ID:", profile.operatorId) || profile.operatorId,
       aadhaar: prompt("Aadhaar:", profile.aadhaar) || profile.aadhaar,
       district: prompt("District:", profile.district) || profile.district,
-      brc: prompt("BRC:", profile.brc) || profile.brc
+      brc: prompt("BRC:", profile.brc) || profile.brc,
     };
 
     saveProfile(updated);
@@ -72,8 +131,6 @@ export default function Profile({ user }) {
 
   return (
     <div className="max-w-xl mx-auto bg-white shadow-lg rounded-2xl overflow-hidden">
-      
-      {/* Top Section */}
       <div className="bg-blue-600 text-white text-center p-6">
         <img
           src={profile.avatar || "https://via.placeholder.com/120"}
@@ -92,17 +149,27 @@ export default function Profile({ user }) {
         <p className="text-sm">{profile.email}</p>
       </div>
 
-      {/* Details */}
       <div className="p-6 space-y-3 text-sm">
+        {message && (
+          <div className="bg-green-100 text-green-700 p-3 rounded-xl">
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-yellow-100 text-yellow-700 p-3 rounded-xl">
+            {error}
+          </div>
+        )}
+
         <Detail label="Mobile" value={profile.mobile} />
         <Detail label="Station ID" value={profile.stationId} />
-        <Detail label="Oprator ID" value={profile.opratorId} />
+        <Detail label="Operator ID" value={profile.operatorId} />
         <Detail label="Aadhaar" value={profile.aadhaar} />
         <Detail label="District" value={profile.district} />
         <Detail label="BRC" value={profile.brc} />
       </div>
 
-      {/* Button */}
       <div className="p-4">
         <button
           onClick={handleEdit}
@@ -115,7 +182,6 @@ export default function Profile({ user }) {
   );
 }
 
-// Reusable Row Component
 function Detail({ label, value }) {
   return (
     <div className="flex justify-between border-b pb-2">
