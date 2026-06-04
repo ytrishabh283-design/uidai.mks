@@ -6,6 +6,7 @@ import Users from "./pages/Users";
 import Requests from "./pages/Requests";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import StaffAnalytics from "./pages/StaffAnalytics";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -82,6 +83,18 @@ export default function App() {
             <ProtectedRoute isAuthenticated={isAuthenticated}>
               <Layout admin={admin} onLogout={handleLogout}>
                 <Users />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+
+        <Route
+          path="/users/:userId/analytics"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <Layout admin={admin} onLogout={handleLogout}>
+                <StaffAnalytics />
               </Layout>
             </ProtectedRoute>
           }
