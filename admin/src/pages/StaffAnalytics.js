@@ -34,16 +34,24 @@ function formatCurrency(value) {
   return `₹${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
-function StatCard({ title, value, subtitle, icon: Icon, gradient }) {
+function StatCard({ title, value, subtitle, icon: Icon, tone }) {
+  const tones = {
+    blue: "text-blue-600 bg-blue-50",
+    red: "text-red-600 bg-red-50",
+    green: "text-green-600 bg-green-50",
+    purple: "text-purple-600 bg-purple-50",
+    pink: "text-pink-600 bg-pink-50",
+  };
+
   return (
-    <div className={`rounded-3xl p-5 text-white shadow-lg bg-gradient-to-br ${gradient}`}>
+    <div className="rounded-3xl p-5 bg-white shadow-sm border border-blue-100 hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-white/80 text-sm font-medium">{title}</p>
-          <h3 className="text-3xl font-bold mt-2">{value}</h3>
-          {subtitle && <p className="text-white/80 text-xs mt-2">{subtitle}</p>}
+          <p className="text-slate-500 text-sm font-semibold">{title}</p>
+          <h3 className="text-3xl font-bold mt-2 text-slate-900">{value}</h3>
+          {subtitle && <p className="text-slate-400 text-xs mt-2">{subtitle}</p>}
         </div>
-        <div className="bg-white/20 p-3 rounded-2xl">
+        <div className={`${tones[tone] || tones.blue} p-3 rounded-2xl`}>
           <Icon size={28} />
         </div>
       </div>
@@ -57,22 +65,23 @@ function WeeklyEnrollmentChart({ data }) {
 
   const colors = [
     "from-blue-500 to-blue-700",
-    "from-green-500 to-emerald-700",
+    "from-emerald-500 to-emerald-700",
     "from-purple-500 to-violet-700",
-    "from-orange-500 to-rose-600",
-    "from-pink-500 to-red-600",
+    "from-orange-500 to-orange-700",
+    "from-pink-500 to-rose-700",
+    "from-cyan-500 to-sky-700",
   ];
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border p-6">
+    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-blue-600" />
-            Weekly Enrollment Chart
+            Working Day Enrollment Chart
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Candle par cursor le jaane par New, MBU, BIO aur DEM detail dikhega.
+            Mon-Sat candles. Cursor le jaane par New, MBU, BIO aur DEM detail dikhega.
           </p>
         </div>
       </div>
@@ -96,7 +105,7 @@ function WeeklyEnrollmentChart({ data }) {
               >
                 {active && (
                   <div className="absolute bottom-full mb-3 z-20 w-56 rounded-2xl bg-gray-900 text-white p-4 shadow-xl text-sm">
-                    <p className="font-bold mb-2">{item.week}</p>
+                    <p className="font-bold mb-2">{item.day || item.week}</p>
                     <div className="space-y-1">
                       <p>New Aadhaar: <span className="font-semibold">{item.new}</span></p>
                       <p>MBU Update: <span className="font-semibold">{item.mbu}</span></p>
@@ -114,7 +123,7 @@ function WeeklyEnrollmentChart({ data }) {
                   className={`w-full max-w-24 rounded-t-2xl bg-gradient-to-t ${colors[index % colors.length]} shadow-md transition-all ${active ? "scale-105" : ""}`}
                   style={{ height: `${height}px` }}
                 />
-                <p className="text-xs text-gray-500 mt-3 font-medium">{item.week}</p>
+                <p className="text-xs text-gray-500 mt-3 font-medium">{item.day || item.week}</p>
               </div>
             );
           })}
@@ -131,7 +140,7 @@ function TargetPieChart({ completed, target }) {
   const percentage = Math.round((safeCompleted / safeTarget) * 100);
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border p-6">
+    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
       <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-6">
         <Target className="w-5 h-5 text-pink-600" />
         Monthly Target Pie Chart
@@ -220,22 +229,30 @@ export default function StaffAnalytics() {
   const target = data?.monthly_target || { completed: 0, target: 1000 };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 rounded-3xl p-6 text-white shadow-lg">
+    <div
+      className="space-y-6 min-h-screen -m-6 p-6"
+      style={{
+        backgroundColor: "#eef7ff",
+        backgroundImage:
+          "radial-gradient(circle at 1px 1px, rgba(59,130,246,0.12) 1px, transparent 0)",
+        backgroundSize: "22px 22px",
+      }}
+    >
+      <div className="bg-white rounded-3xl p-6 text-slate-900 shadow-sm border border-blue-100">
         <div className="flex items-center justify-between gap-4">
           <div>
             <button
               onClick={() => navigate("/users")}
-              className="inline-flex items-center gap-2 text-sm bg-white/15 hover:bg-white/25 px-3 py-2 rounded-xl mb-4"
+              className="inline-flex items-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-xl mb-4"
             >
               <ArrowLeft size={16} /> Back to Users
             </button>
             <h1 className="text-3xl font-bold">Dashboard Analytics</h1>
-            <p className="text-blue-100 mt-2">
+            <p className="text-slate-500 mt-2">
               {staff.name || "Staff"} • {staff.staff_id || "-"} • {staff.brc || "-"} [{staff.district || "-"}]
             </p>
           </div>
-          <div className="hidden md:block bg-white/15 p-4 rounded-2xl">
+          <div className="hidden md:block bg-blue-50 text-blue-600 p-4 rounded-2xl">
             <Activity size={42} />
           </div>
         </div>
@@ -255,39 +272,39 @@ export default function StaffAnalytics() {
               value={formatCurrency(summary.wallet_load)}
               subtitle="Selected period"
               icon={Wallet}
-              gradient="from-blue-500 to-blue-700"
+              tone="blue"
             />
             <StatCard
               title="EOD Deduction"
               value={formatCurrency(summary.eod_deduction)}
               subtitle="Paid report amount"
               icon={ReceiptText}
-              gradient="from-red-500 to-orange-600"
+              tone="red"
             />
             <StatCard
               title="Work Commission"
               value={formatCurrency(summary.work_commission)}
-              subtitle="Wallet load - EOD deduction"
+              subtitle="₹10 / enrollment"
               icon={BadgeIndianRupee}
-              gradient="from-green-500 to-emerald-700"
+              tone="green"
             />
             <StatCard
               title="Avg Enrollment / Day"
               value={summary.avg_enrollment_per_day || 0}
               subtitle="Selected period average"
               icon={Activity}
-              gradient="from-purple-500 to-violet-700"
+              tone="purple"
             />
             <StatCard
               title="Monthly Target"
               value={`${target.completed || 0}/${target.target || 1000}`}
               subtitle={`${target.percentage || 0}% completed`}
               icon={Target}
-              gradient="from-pink-500 to-rose-700"
+              tone="pink"
             />
           </div>
 
-          <div className="bg-white rounded-3xl shadow-sm border p-5">
+          <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-5">
             <div className="flex items-center gap-2 mb-4">
               <CalendarDays className="w-5 h-5 text-indigo-600" />
               <h2 className="text-lg font-bold text-gray-800">Date Filter</h2>
