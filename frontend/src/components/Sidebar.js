@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Work,
   Home,
   Calendar,
   AlertCircle,
@@ -37,7 +36,7 @@ export default function Sidebar({ user, onLogout, isOpen, setIsOpen }) {
   }, []);
 
   const navItems = [
-    { to: '/work', icon: Work, label: 'UPLOAD REPORT', badge: null },
+    { to: '/home', icon: , label: 'UPLOAD REPORT', badge: null },
     { to: '/eod-request', icon: Calendar, label: 'EOD Request', badge: null },
     { to: '/missing-eod', icon: AlertCircle, label: 'Missing EOD', badge: null },
     { to: '/wallet', icon: Wallet, label: 'Wallet', badge: null },
