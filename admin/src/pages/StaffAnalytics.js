@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   CalendarDays,
   BarChart3,
+  Download,
 } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -186,6 +187,79 @@ function TargetPieChart({ completed, target }) {
   );
 }
 
+
+function DailyReportsTable({ reports, onDownload }) {
+  return (
+    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h3 className="text-xl font-bold text-gray-800">Selected Date Reports</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Selected filter ke according UC aur ECMP report summary download.
+          </p>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b text-left text-slate-500 text-sm bg-sky-50/60">
+              <th className="px-4 py-3 rounded-l-xl">Report Date</th>
+              <th className="px-4 py-3">Universal Client</th>
+              <th className="px-4 py-3">ECMP Client</th>
+              <th className="px-4 py-3 rounded-r-xl">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reports.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="py-8 text-center text-gray-500">
+                  Selected date me koi report nahi mila
+                </td>
+              </tr>
+            ) : (
+              reports.map((row) => (
+                <tr key={row.report_date} className="border-b last:border-0 hover:bg-sky-50/50">
+                  <td className="px-4 py-4 font-semibold text-slate-800">{row.report_date}</td>
+                  <td className="px-4 py-4">
+                    {row.uc_available ? (
+                      <button
+                        type="button"
+                        onClick={() => onDownload(row.uc_report_id)}
+                        className="inline-flex items-center gap-2 bg-sky-100 hover:bg-sky-200 text-sky-800 px-3 py-2 rounded-xl text-sm font-semibold"
+                      >
+                        <Download size={15} /> Download
+                      </button>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4">
+                    {row.ecmp_available ? (
+                      <button
+                        type="button"
+                        onClick={() => onDownload(row.ecmp_report_id)}
+                        className="inline-flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-3 py-2 rounded-xl text-sm font-semibold"
+                      >
+                        <Download size={15} /> Download
+                      </button>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-4 font-bold text-blue-700">
+                    {row.total_enrollment || 0} enrollment
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function StaffAnalytics() {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -235,9 +309,38 @@ export default function StaffAnalytics() {
     loadAnalytics();
   }, [queryString, userId]);
 
+
+  const handleReportDownload = async (reportId) => {
+    if (!reportId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API}/admin/reports/${reportId}/download`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "text/csv;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `report-${reportId}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err?.response?.data?.detail || "Report download nahi ho raha hai");
+    }
+  };
+
+
   const summary = data?.summary || {};
   const staff = data?.staff || {};
   const weekly = data?.weekly_enrollment || [];
+  const dailyReports = data?.daily_reports || [];
   const rawTarget = data?.monthly_target || {};
   const target = {
     completed: Number(rawTarget.completed || 0),
@@ -247,7 +350,7 @@ export default function StaffAnalytics() {
 
   return (
     <div
-      className="space-y-6 min-h-screen -m-6 p-6"
+      className="space-y-6 min-h-full p-6"
       style={{
         backgroundColor: "#eef7ff",
         backgroundImage:
@@ -401,6 +504,8 @@ export default function StaffAnalytics() {
             </div>
             <TargetPieChart completed={target.completed} target={target.target} />
           </div>
+
+          <DailyReportsTable reports={dailyReports} onDownload={handleReportDownload} />
         </>
       )}
     </div>
