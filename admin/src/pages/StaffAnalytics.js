@@ -14,6 +14,7 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+const MONTHLY_TARGET = 500;
 
 const RANGE_OPTIONS = [
   { label: "1 Week", value: "1week" },
@@ -36,22 +37,24 @@ function formatCurrency(value) {
 
 function StatCard({ title, value, subtitle, icon: Icon, tone }) {
   const tones = {
-    blue: "text-blue-600 bg-blue-50",
-    red: "text-red-600 bg-red-50",
-    green: "text-green-600 bg-green-50",
-    purple: "text-purple-600 bg-purple-50",
-    pink: "text-pink-600 bg-pink-50",
+    blue: { icon: "text-blue-600 bg-blue-50", value: "text-blue-700" },
+    red: { icon: "text-red-600 bg-red-50", value: "text-red-700" },
+    green: { icon: "text-green-600 bg-green-50", value: "text-green-700" },
+    purple: { icon: "text-purple-600 bg-purple-50", value: "text-purple-700" },
+    pink: { icon: "text-pink-600 bg-pink-50", value: "text-pink-700" },
   };
+
+  const selectedTone = tones[tone] || tones.blue;
 
   return (
     <div className="rounded-3xl p-5 bg-white shadow-sm border border-blue-100 hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-slate-500 text-sm font-semibold">{title}</p>
-          <h3 className="text-3xl font-bold mt-2 text-slate-900">{value}</h3>
+          <h3 className={`text-3xl font-bold mt-2 ${selectedTone.value}`}>{value}</h3>
           {subtitle && <p className="text-slate-400 text-xs mt-2">{subtitle}</p>}
         </div>
-        <div className={`${tones[tone] || tones.blue} p-3 rounded-2xl`}>
+        <div className={`${selectedTone.icon} p-3 rounded-2xl`}>
           <Icon size={28} />
         </div>
       </div>
@@ -60,8 +63,12 @@ function StatCard({ title, value, subtitle, icon: Icon, tone }) {
 }
 
 function WeeklyEnrollmentChart({ data }) {
-  const [hovered, setHovered] = useState(null);
-  const maxTotal = Math.max(...data.map((item) => item.total || 0), 1);
+  const chartData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => {
+    const found = data.find((item) => (item.day || item.week) === day);
+    return found || { day, week: day, new: 0, mbu: 0, bio: 0, dem: 0, total: 0 };
+  });
+
+  const maxTotal = Math.max(...chartData.map((item) => item.total || 0), 1);
 
   const colors = [
     "from-blue-500 to-blue-700",
@@ -73,7 +80,7 @@ function WeeklyEnrollmentChart({ data }) {
   ];
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
+    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -86,49 +93,38 @@ function WeeklyEnrollmentChart({ data }) {
         </div>
       </div>
 
-      {data.length === 0 ? (
-        <div className="h-72 flex items-center justify-center text-gray-500 bg-gray-50 rounded-2xl">
-          No enrollment data found
-        </div>
-      ) : (
-        <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
-          {data.map((item, index) => {
-            const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
-            const active = hovered?.week === item.week;
+      <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
+        {chartData.map((item, index) => {
+          const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
 
-            return (
-              <div
-                key={item.week}
-                className="flex-1 flex flex-col items-center justify-end relative"
-                onMouseEnter={() => setHovered(item)}
-                onMouseLeave={() => setHovered(null)}
-              >
-                {active && (
-                  <div className="absolute bottom-full mb-3 z-20 w-56 rounded-2xl bg-gray-900 text-white p-4 shadow-xl text-sm">
-                    <p className="font-bold mb-2">{item.day || item.week}</p>
-                    <div className="space-y-1">
-                      <p>New Aadhaar: <span className="font-semibold">{item.new}</span></p>
-                      <p>MBU Update: <span className="font-semibold">{item.mbu}</span></p>
-                      <p>Biometric Update: <span className="font-semibold">{item.bio}</span></p>
-                      <p>Demographic Update: <span className="font-semibold">{item.dem}</span></p>
-                      <div className="border-t border-white/20 pt-2 mt-2">
-                        Total: <span className="font-bold">{item.total}</span>
-                      </div>
-                    </div>
+          return (
+            <div
+              key={item.day || item.week}
+              className="group flex-1 flex flex-col items-center justify-end relative"
+            >
+              <div className="pointer-events-none hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-60 rounded-2xl bg-slate-900 text-white p-4 shadow-xl text-sm">
+                <p className="font-bold mb-2">{item.day || item.week}</p>
+                <div className="space-y-1">
+                  <p>New Aadhaar: <span className="font-semibold">{item.new || 0}</span></p>
+                  <p>MBU Update: <span className="font-semibold">{item.mbu || 0}</span></p>
+                  <p>Biometric Update: <span className="font-semibold">{item.bio || 0}</span></p>
+                  <p>Demographic Update: <span className="font-semibold">{item.dem || 0}</span></p>
+                  <div className="border-t border-white/20 pt-2 mt-2">
+                    Total: <span className="font-bold">{item.total || 0}</span>
                   </div>
-                )}
-
-                <div className="text-sm font-bold text-gray-700 mb-2">{item.total}</div>
-                <div
-                  className={`w-full max-w-24 rounded-t-2xl bg-gradient-to-t ${colors[index % colors.length]} shadow-md transition-all ${active ? "scale-105" : ""}`}
-                  style={{ height: `${height}px` }}
-                />
-                <p className="text-xs text-gray-500 mt-3 font-medium">{item.day || item.week}</p>
+                </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+
+              <div className="text-sm font-bold text-gray-700 mb-2">{item.total || 0}</div>
+              <div
+                className={`w-full max-w-24 rounded-t-2xl bg-gradient-to-t ${colors[index % colors.length]} shadow-md transition-transform group-hover:scale-105`}
+                style={{ height: `${height}px` }}
+              />
+              <p className="text-xs text-gray-500 mt-3 font-medium">{item.day || item.week}</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -226,7 +222,14 @@ export default function StaffAnalytics() {
   const summary = data?.summary || {};
   const staff = data?.staff || {};
   const weekly = data?.weekly_enrollment || [];
-  const target = data?.monthly_target || { completed: 0, target: 1000 };
+  const backendTarget = data?.monthly_target || {};
+  const targetCompleted = Number(backendTarget.completed || 0);
+  const targetPercentage = Math.round((Math.min(targetCompleted, MONTHLY_TARGET) / MONTHLY_TARGET) * 100);
+  const target = {
+    completed: targetCompleted,
+    target: MONTHLY_TARGET,
+    percentage: targetPercentage,
+  };
 
   return (
     <div
@@ -297,7 +300,7 @@ export default function StaffAnalytics() {
             />
             <StatCard
               title="Monthly Target"
-              value={`${target.completed || 0}/${target.target || 1000}`}
+              value={`${target.completed || 0}/${MONTHLY_TARGET}`}
               subtitle={`${target.percentage || 0}% completed`}
               icon={Target}
               tone="pink"
