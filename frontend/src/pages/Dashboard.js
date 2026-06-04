@@ -8,6 +8,7 @@ import UCReport from './UCReport';
 import EODRequest from './EODRequest';
 import MissingEOD from './MissingEOD';
 import Wallet from './Wallet';
+import StaffDashboard from './StaffDashboard';
 
 export default function Dashboard({ user, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -45,7 +46,8 @@ export default function Dashboard({ user, onLogout }) {
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">
           <Routes>
-            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<StaffDashboard user={user} />} />
             <Route path="/profile" element={<Profile user={user} />} />
             <Route path="/home" element={<Home user={user} />} />
             <Route path="/ecmp-report" element={<ECMPReport user={user} />} />
