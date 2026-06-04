@@ -14,7 +14,6 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-const MONTHLY_TARGET = 500;
 
 const RANGE_OPTIONS = [
   { label: "1 Week", value: "1week" },
@@ -62,13 +61,19 @@ function StatCard({ title, value, subtitle, icon: Icon, tone }) {
   );
 }
 
-function WeeklyEnrollmentChart({ data }) {
-  const chartData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => {
-    const found = data.find((item) => (item.day || item.week) === day);
-    return found || { day, week: day, new: 0, mbu: 0, bio: 0, dem: 0, total: 0 };
-  });
 
-  const maxTotal = Math.max(...chartData.map((item) => item.total || 0), 1);
+function InfoItem({ label, value }) {
+  return (
+    <div className="bg-sky-50/80 border border-sky-100 rounded-2xl px-4 py-3">
+      <p className="text-[11px] uppercase tracking-wide text-sky-600 font-bold">{label}</p>
+      <p className="text-slate-800 font-semibold mt-1 break-words">{value || "-"}</p>
+    </div>
+  );
+}
+
+function WeeklyEnrollmentChart({ data }) {
+  const [hovered, setHovered] = useState(null);
+  const maxTotal = Math.max(...data.map((item) => item.total || 0), 1);
 
   const colors = [
     "from-blue-500 to-blue-700",
@@ -80,7 +85,7 @@ function WeeklyEnrollmentChart({ data }) {
   ];
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6 overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -93,38 +98,49 @@ function WeeklyEnrollmentChart({ data }) {
         </div>
       </div>
 
-      <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
-        {chartData.map((item, index) => {
-          const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
+      {data.length === 0 ? (
+        <div className="h-72 flex items-center justify-center text-gray-500 bg-gray-50 rounded-2xl">
+          No enrollment data found
+        </div>
+      ) : (
+        <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
+          {data.map((item, index) => {
+            const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
+            const active = hovered?.week === item.week;
 
-          return (
-            <div
-              key={item.day || item.week}
-              className="group flex-1 flex flex-col items-center justify-end relative"
-            >
-              <div className="pointer-events-none hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-30 w-60 rounded-2xl bg-slate-900 text-white p-4 shadow-xl text-sm">
-                <p className="font-bold mb-2">{item.day || item.week}</p>
-                <div className="space-y-1">
-                  <p>New Aadhaar: <span className="font-semibold">{item.new || 0}</span></p>
-                  <p>MBU Update: <span className="font-semibold">{item.mbu || 0}</span></p>
-                  <p>Biometric Update: <span className="font-semibold">{item.bio || 0}</span></p>
-                  <p>Demographic Update: <span className="font-semibold">{item.dem || 0}</span></p>
-                  <div className="border-t border-white/20 pt-2 mt-2">
-                    Total: <span className="font-bold">{item.total || 0}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-sm font-bold text-gray-700 mb-2">{item.total || 0}</div>
+            return (
               <div
-                className={`w-full max-w-24 rounded-t-2xl bg-gradient-to-t ${colors[index % colors.length]} shadow-md transition-transform group-hover:scale-105`}
-                style={{ height: `${height}px` }}
-              />
-              <p className="text-xs text-gray-500 mt-3 font-medium">{item.day || item.week}</p>
-            </div>
-          );
-        })}
-      </div>
+                key={item.week}
+                className="flex-1 flex flex-col items-center justify-end relative"
+                onMouseEnter={() => setHovered(item)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                {active && (
+                  <div className="absolute bottom-full mb-2 z-20 w-32 rounded-xl bg-gray-900/80 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
+                    <p className="font-bold mb-1">{item.day || item.week}</p>
+                    <div className="space-y-0.5">
+                      <p>New: <span className="font-semibold">{item.new}</span></p>
+                      <p>MBU: <span className="font-semibold">{item.mbu}</span></p>
+                      <p>BIO: <span className="font-semibold">{item.bio}</span></p>
+                      <p>DEM: <span className="font-semibold">{item.dem}</span></p>
+                      <div className="border-t border-white/20 pt-1 mt-1">
+                        Total: <span className="font-bold">{item.total}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-sm font-bold text-gray-700 mb-2">{item.total}</div>
+                <div
+                  className={`w-full max-w-24 rounded-t-2xl bg-gradient-to-t ${colors[index % colors.length]} shadow-md transition-all ${active ? "scale-105" : ""}`}
+                  style={{ height: `${height}px` }}
+                />
+                <p className="text-xs text-gray-500 mt-3 font-medium">{item.day || item.week}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -222,13 +238,11 @@ export default function StaffAnalytics() {
   const summary = data?.summary || {};
   const staff = data?.staff || {};
   const weekly = data?.weekly_enrollment || [];
-  const backendTarget = data?.monthly_target || {};
-  const targetCompleted = Number(backendTarget.completed || 0);
-  const targetPercentage = Math.round((Math.min(targetCompleted, MONTHLY_TARGET) / MONTHLY_TARGET) * 100);
+  const rawTarget = data?.monthly_target || {};
   const target = {
-    completed: targetCompleted,
-    target: MONTHLY_TARGET,
-    percentage: targetPercentage,
+    completed: Number(rawTarget.completed || 0),
+    target: 500,
+    percentage: Math.round((Number(rawTarget.completed || 0) / 500) * 100),
   };
 
   return (
@@ -242,21 +256,40 @@ export default function StaffAnalytics() {
       }}
     >
       <div className="bg-white rounded-3xl p-6 text-slate-900 shadow-sm border border-blue-100">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <button
-              onClick={() => navigate("/users")}
-              className="inline-flex items-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-xl mb-4"
-            >
-              <ArrowLeft size={16} /> Back to Users
-            </button>
-            <h1 className="text-3xl font-bold">Dashboard Analytics</h1>
-            <p className="text-slate-500 mt-2">
-              {staff.name || "Staff"} • {staff.staff_id || "-"} • {staff.brc || "-"} [{staff.district || "-"}]
-            </p>
+        <button
+          onClick={() => navigate("/users")}
+          className="inline-flex items-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-xl mb-5"
+        >
+          <ArrowLeft size={16} /> Back to Users
+        </button>
+
+        <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+          <div className="w-24 h-24 rounded-full border-4 border-sky-100 bg-sky-50 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+            {staff.avatar || staff.photo || staff.profile_photo ? (
+              <img
+                src={staff.avatar || staff.photo || staff.profile_photo}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Activity className="w-10 h-10 text-sky-600" />
+            )}
           </div>
-          <div className="hidden md:block bg-blue-50 text-blue-600 p-4 rounded-2xl">
-            <Activity size={42} />
+
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold">Dashboard Analytics</h1>
+            <p className="text-slate-500 mt-1">Complete staff activity overview</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-5 text-sm">
+              <InfoItem label="Name" value={staff.name} />
+              <InfoItem label="Email ID" value={staff.email} />
+              <InfoItem label="Aadhaar No" value={staff.aadhaar || staff.aadhaar_no} />
+              <InfoItem label="Mobile No" value={staff.mobile || staff.mobile_no} />
+              <InfoItem label="Staff ID" value={staff.staff_id} />
+              <InfoItem label="Station ID" value={staff.station_id || staff.stationId} />
+              <InfoItem label="Joining Date" value={staff.joining_date} />
+              <InfoItem label="BRC / District" value={`${staff.brc || "-"} / ${staff.district || "-"}`} />
+            </div>
           </div>
         </div>
       </div>
@@ -293,14 +326,14 @@ export default function StaffAnalytics() {
             />
             <StatCard
               title="Avg Enrollment / Day"
-              value={summary.avg_enrollment_per_day || 0}
+              value={Math.round(Number(summary.avg_enrollment_per_day || 0))}
               subtitle="Selected period average"
               icon={Activity}
               tone="purple"
             />
             <StatCard
               title="Monthly Target"
-              value={`${target.completed || 0}/${MONTHLY_TARGET}`}
+              value={`${target.completed || 0}/500`}
               subtitle={`${target.percentage || 0}% completed`}
               icon={Target}
               tone="pink"
@@ -320,8 +353,8 @@ export default function StaffAnalytics() {
                   onClick={() => setRange(item.value)}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
                     range === item.value
-                      ? "bg-indigo-600 text-white shadow"
-                      : "bg-sky-100 text-sky-800 hover:bg-sky-200"
+                      ? "bg-sky-200 text-sky-900 shadow-md border border-sky-300"
+                      : "bg-sky-50 text-sky-700 border border-sky-100 hover:bg-sky-100"
                   }`}
                 >
                   {item.label}
