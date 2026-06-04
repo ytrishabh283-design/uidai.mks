@@ -212,7 +212,6 @@ export default function StaffAnalytics() {
 
   useEffect(() => {
     loadAnalytics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryString, userId]);
 
   const summary = data?.summary || {};
