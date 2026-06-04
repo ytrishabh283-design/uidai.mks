@@ -107,11 +107,11 @@ function WeeklyEnrollmentChart({ data }) {
         <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
           {data.map((item, index) => {
             const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
-            const active = hovered?.week === item.week;
+            const active = hovered?.day === item.day;
 
             return (
               <div
-                key={item.week}
+                key={item.day || item.week}
                 className="flex-1 flex flex-col items-center justify-end relative"
                 onMouseEnter={() => setHovered(item)}
                 onMouseLeave={() => setHovered(null)}
