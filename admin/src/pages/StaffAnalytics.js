@@ -320,8 +320,8 @@ export default function StaffAnalytics() {
                   onClick={() => setRange(item.value)}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
                     range === item.value
-                      ? "bg-sky-200 text-sky-900 shadow-md border border-sky-300"
-                      : "bg-sky-50 text-sky-700 border border-sky-100 hover:bg-sky-100"
+                      ? "bg-sky-300 text-sky-900 shadow"
+                      : "bg-sky-100 text-sky-800 hover:bg-sky-200"
                   }`}
                 >
                   {item.label}
