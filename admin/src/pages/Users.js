@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getUsers, createUser, updateUser, deleteUser } from "../services/api";
 
 export default function Users() {
@@ -285,8 +286,13 @@ export default function Users() {
                       </span>
                     </td>
 
-                    <td className="py-3 text-blue-600 font-medium">
-                      View
+                    <td className="py-3">
+                      <Link
+                        to={`/users/${user.id}/analytics`}
+                        className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium"
+                      >
+                        View
+                      </Link>
                     </td>
 
                     <td className="py-3 space-x-2">
