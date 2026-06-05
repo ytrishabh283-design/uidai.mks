@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Calendar as CalendarIcon, FileUp, Send, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, FileUp, Send, CheckCircle, XCircle, FileText } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
 const BYTES_TO_KB = 1024;
 
 export default function EODRequest({ user }) {
+  const [reportType, setReportType] = useState('ECMP');
   const [selectedDate, setSelectedDate] = useState('');
   const [reason, setReason] = useState('');
   const [file, setFile] = useState(null);
@@ -18,8 +18,23 @@ export default function EODRequest({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!reportType) {
+      setError('Please select report type');
+      return;
+    }
+
     if (!selectedDate) {
       setError('Please select a date');
+      return;
+    }
+
+    if (!file) {
+      setError('Please upload original ZIP file');
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith('.zip')) {
+      setError('Only ZIP file is allowed');
       return;
     }
 
@@ -30,13 +45,11 @@ export default function EODRequest({ user }) {
     try {
       const formData = new FormData();
       formData.append('date', selectedDate);
-      formData.append('reason', reason || '');
-      if (file) {
-        formData.append('file', file);
-      }
+      formData.append('report_type', reportType);
+      formData.append('reason', reason);
+      formData.append('file', file);
 
       const token = localStorage.getItem('token');
-
       await axios.post(`${API}/requests/submit`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -45,10 +58,10 @@ export default function EODRequest({ user }) {
       });
 
       setSuccess(true);
+      setReportType('ECMP');
       setSelectedDate('');
       setReason('');
       setFile(null);
-
       const fileInput = document.getElementById('request-file-input');
       if (fileInput) fileInput.value = '';
 
@@ -64,7 +77,7 @@ export default function EODRequest({ user }) {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl p-6 shadow-lg">
         <h2 className="text-2xl font-bold mb-2">EOD Request</h2>
-        <p className="text-purple-100">Submit EOD request with report file for admin review</p>
+        <p className="text-purple-100">Submit UC / ECMP EOD request with original ZIP file</p>
       </div>
 
       {success && (
@@ -85,9 +98,34 @@ export default function EODRequest({ user }) {
       )}
 
       <div className="bg-white rounded-xl shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Raise Request</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Raise EOD Request</h3>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Report Type
+              </div>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {['ECMP', 'UC'].map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setReportType(type)}
+                  className={`px-4 py-3 rounded-xl font-semibold border transition-all ${
+                    reportType === type
+                      ? 'bg-purple-600 text-white border-purple-600 shadow'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50'
+                  }`}
+                >
+                  {type === 'UC' ? 'UC Report' : 'ECMP Report'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <div className="flex items-center gap-2">
@@ -105,15 +143,13 @@ export default function EODRequest({ user }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Reason / Note
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Reason / Remark</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition resize-none"
-              placeholder="Enter request details..."
+              placeholder="Enter reason for EOD request..."
             />
           </div>
 
@@ -121,38 +157,34 @@ export default function EODRequest({ user }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               <div className="flex items-center gap-2">
                 <FileUp className="w-4 h-4" />
-                Upload Report File
+                Upload Original ZIP File
               </div>
             </label>
-
             <div
               className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors cursor-pointer bg-gray-50"
-              onClick={() => document.getElementById('request-file-input')?.click()}
+              onClick={() => document.getElementById('request-file-input').click()}
             >
               {file ? (
                 <div className="text-purple-600">
                   <FileUp className="w-8 h-8 mx-auto mb-2" />
                   <p className="font-medium">{file.name}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {(file.size / BYTES_TO_KB).toFixed(2)} KB
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">{(file.size / BYTES_TO_KB).toFixed(2)} KB</p>
                 </div>
               ) : (
                 <div className="text-gray-500">
                   <FileUp className="w-8 h-8 mx-auto mb-2" />
-                  <p>Click to upload report file</p>
-                  <p className="text-sm mt-1">PDF, image, ZIP, HTML or document</p>
+                  <p>Click to upload original ZIP file</p>
+                  <p className="text-sm mt-1">Only .zip allowed</p>
                 </div>
               )}
             </div>
-
             <input
               id="request-file-input"
               type="file"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              accept=".zip"
+              onChange={(e) => setFile(e.target.files[0])}
               className="hidden"
             />
-
             {file && (
               <button
                 type="button"
@@ -186,12 +218,6 @@ export default function EODRequest({ user }) {
             )}
           </button>
         </form>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 text-blue-800 px-6 py-4 rounded-xl">
-        <p className="text-sm">
-          <strong>Note:</strong> Admin will review your uploaded file and approve or reject your request.
-        </p>
       </div>
     </div>
   );
