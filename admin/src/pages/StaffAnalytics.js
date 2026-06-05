@@ -107,11 +107,11 @@ function WeeklyEnrollmentChart({ data }) {
         <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
           {data.map((item, index) => {
             const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
-            const active = hovered?.day === item.day;
+            const active = hovered?.week === item.week;
 
             return (
               <div
-                key={item.day || item.week}
+                key={item.week}
                 className="flex-1 flex flex-col items-center justify-end relative"
                 onMouseEnter={() => setHovered(item)}
                 onMouseLeave={() => setHovered(null)}
@@ -228,7 +228,7 @@ function DailyReportsTable({ reports, onDownload }) {
                         onClick={() => onDownload(row.uc_report_id)}
                         className="inline-flex items-center gap-2 bg-sky-100 hover:bg-sky-200 text-sky-800 px-3 py-2 rounded-xl text-sm font-semibold"
                       >
-                        <Download size={15} /> Download
+                        <Download size={15} /> Download ZIP
                       </button>
                     ) : (
                       <span className="text-gray-400">-</span>
@@ -241,7 +241,7 @@ function DailyReportsTable({ reports, onDownload }) {
                         onClick={() => onDownload(row.ecmp_report_id)}
                         className="inline-flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-3 py-2 rounded-xl text-sm font-semibold"
                       >
-                        <Download size={15} /> Download
+                        <Download size={15} /> Download ZIP
                       </button>
                     ) : (
                       <span className="text-gray-400">-</span>
@@ -315,18 +315,18 @@ export default function StaffAnalytics() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API}/admin/reports/${reportId}/download`, {
+      const response = await axios.get(`${API}/admin/reports/${reportId}/download-original`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         responseType: "blob",
       });
 
-      const blob = new Blob([response.data], { type: "text/csv;charset=utf-8" });
+      const blob = new Blob([response.data], { type: "application/zip" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `report-${reportId}.csv`;
+      link.download = `report-${reportId}.zip`;
       document.body.appendChild(link);
       link.click();
       link.remove();
