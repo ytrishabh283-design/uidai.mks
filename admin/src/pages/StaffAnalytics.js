@@ -66,6 +66,9 @@ function InfoItem({ label, value }) {
 
 function WeeklyEnrollmentChart({ data }) {
   const [hovered, setHovered] = useState(null);
+  const PLOT_HEIGHT = 260;
+  const ticks = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
+
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -85,52 +88,91 @@ function WeeklyEnrollmentChart({ data }) {
           No enrollment data found
         </div>
       ) : (
-        <div className="flex h-80 gap-3">
-          <div className="w-10 flex flex-col justify-between text-[11px] font-semibold text-gray-500 pr-2 border-r border-gray-100">
-            {[100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0].map((tick) => (
-              <span key={tick} className="leading-none text-right">{tick}</span>
-            ))}
+        <div className="flex gap-3">
+          {/* Fixed 0-100 Y-axis */}
+          <div className="w-11 shrink-0 pt-2 pb-8">
+            <div
+              className="relative border-r border-slate-200 text-[11px] font-semibold text-slate-500"
+              style={{ height: `${PLOT_HEIGHT}px` }}
+            >
+              {ticks.map((tick) => (
+                <span
+                  key={tick}
+                  className="absolute right-2 -translate-y-1/2 leading-none"
+                  style={{ top: `${100 - tick}%` }}
+                >
+                  {tick}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="relative flex-1 flex items-end gap-3 px-2 pt-8 pb-8 border-b border-gray-200 overflow-x-auto">
-            {data.map((item, index) => {
-              const total = Number(item.total || 0);
-              const cappedTotal = Math.min(total, 100);
-              const height = Math.max(12, Math.round((cappedTotal / 100) * 230));
-            const active = hovered?.date === item.date;
-            const candleColor = total <= 15 ? "from-red-500 to-red-700" : "from-green-500 to-green-700";
-
-            return (
-              <div
-                key={`${item.date}-${index}`}
-                className="min-w-12 flex-1 flex flex-col items-center justify-end relative"
-                onMouseEnter={() => setHovered(item)}
-                onMouseLeave={() => setHovered(null)}
-              >
-                {active && (
-                  <div className="absolute bottom-full mb-2 z-20 w-36 rounded-xl bg-gray-900/80 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
-                    <p className="font-bold mb-1">{item.day} {item.date}</p>
-                    <div className="space-y-0.5">
-                      <p>New: <span className="font-semibold">{item.new}</span></p>
-                      <p>MBU: <span className="font-semibold">{item.mbu}</span></p>
-                      <p>BIO: <span className="font-semibold">{item.bio}</span></p>
-                      <p>DEM: <span className="font-semibold">{item.dem}</span></p>
-                      <div className="border-t border-white/20 pt-1 mt-1">
-                        Total: <span className="font-bold">{item.total}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="text-xs font-bold text-gray-700 mb-2">{item.total}</div>
-                <div
-                  className={`w-full max-w-16 rounded-t-2xl bg-gradient-to-t ${candleColor} shadow-md transition-all ${active ? "scale-105" : ""}`}
-                  style={{ height: `${height}px` }}
-                />
-                <p className="text-xs text-gray-500 mt-3 font-medium">{item.label}</p>
+          {/* Plot area: candle height is calculated on same 0-100 axis */}
+          <div className="flex-1 overflow-x-auto pb-1">
+            <div className="relative min-w-full pt-2 pb-8 border-b border-slate-300" style={{ height: `${PLOT_HEIGHT + 40}px` }}>
+              {/* horizontal grid lines aligned with Y-axis ticks */}
+              <div className="absolute left-0 right-0 top-2 pointer-events-none" style={{ height: `${PLOT_HEIGHT}px` }}>
+                {ticks.map((tick) => (
+                  <div
+                    key={tick}
+                    className="absolute left-0 right-0 border-t border-slate-100"
+                    style={{ top: `${100 - tick}%` }}
+                  />
+                ))}
               </div>
-            );
-            })}
+
+              <div className="relative z-10 flex items-end gap-3 h-full pr-2">
+                {data.map((item, index) => {
+                  const total = Number(item.total || 0);
+                  const cappedTotal = Math.min(total, 100);
+                  const height = Math.max(total > 0 ? 4 : 0, Math.round((cappedTotal / 100) * PLOT_HEIGHT));
+                  const active = hovered?.date === item.date;
+                  const candleColor = total <= 15 ? "bg-[#ef4444]" : "bg-[#18c653]";
+
+                  return (
+                    <div
+                      key={`${item.date}-${index}`}
+                      className="min-w-12 flex-1 flex flex-col items-center justify-end relative"
+                      style={{ height: `${PLOT_HEIGHT + 32}px` }}
+                      onMouseEnter={() => setHovered(item)}
+                      onMouseLeave={() => setHovered(null)}
+                    >
+                      {active && (
+                        <div className="absolute bottom-full mb-2 z-20 w-36 rounded-xl bg-gray-900/80 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
+                          <p className="font-bold mb-1">{item.day} {item.date}</p>
+                          <div className="space-y-0.5">
+                            <p>New: <span className="font-semibold">{item.new}</span></p>
+                            <p>MBU: <span className="font-semibold">{item.mbu}</span></p>
+                            <p>BIO: <span className="font-semibold">{item.bio}</span></p>
+                            <p>DEM: <span className="font-semibold">{item.dem}</span></p>
+                            <div className="border-t border-white/20 pt-1 mt-1">
+                              Total: <span className="font-bold">{item.total}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div
+                        className="relative w-full flex justify-center"
+                        style={{ height: `${PLOT_HEIGHT}px` }}
+                      >
+                        <div
+                          className="absolute text-xs font-bold text-gray-700"
+                          style={{ bottom: `${Math.min(height + 4, PLOT_HEIGHT - 4)}px` }}
+                        >
+                          {item.total}
+                        </div>
+                        <div
+                          className={`absolute bottom-0 w-full max-w-16 ${candleColor} transition-all ${active ? "scale-x-105" : ""}`}
+                          style={{ height: `${height}px` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-3 font-medium h-4">{item.label}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}
