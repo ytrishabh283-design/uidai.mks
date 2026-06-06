@@ -16,14 +16,6 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const RANGE_OPTIONS = [
-  { label: "1 Week", value: "1week" },
-  { label: "2 Week", value: "2week" },
-  { label: "3 Week", value: "3week" },
-  { label: "4 Week", value: "4week" },
-  { label: "Custom", value: "custom" },
-];
-
 const CATEGORY_OPTIONS = [
   { label: "All", value: "all" },
   { label: "ECMP", value: "ECMP" },
@@ -76,25 +68,16 @@ function WeeklyEnrollmentChart({ data }) {
   const [hovered, setHovered] = useState(null);
   const maxTotal = Math.max(...data.map((item) => item.total || 0), 1);
 
-  const colors = [
-    "from-blue-500 to-blue-700",
-    "from-emerald-500 to-emerald-700",
-    "from-purple-500 to-violet-700",
-    "from-orange-500 to-orange-700",
-    "from-pink-500 to-rose-700",
-    "from-cyan-500 to-sky-700",
-  ];
-
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-blue-600" />
-            Working Day Enrollment Chart
+            Daily Enrollment Chart
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Mon-Sat candles. Cursor le jaane par New, MBU, BIO aur DEM detail dikhega.
+            Total 15 ya kam ho to red candle, 16 ya zyada ho to green candle.
           </p>
         </div>
       </div>
@@ -104,21 +87,23 @@ function WeeklyEnrollmentChart({ data }) {
           No enrollment data found
         </div>
       ) : (
-        <div className="relative h-80 flex items-end gap-5 px-2 pt-8 pb-8 border-b border-gray-200">
+        <div className="relative h-80 flex items-end gap-3 px-2 pt-8 pb-8 border-b border-gray-200 overflow-x-auto">
           {data.map((item, index) => {
-            const height = Math.max(12, Math.round(((item.total || 0) / maxTotal) * 230));
-            const active = hovered?.week === item.week;
+            const total = Number(item.total || 0);
+            const height = Math.max(12, Math.round((total / maxTotal) * 230));
+            const active = hovered?.date === item.date;
+            const candleColor = total <= 15 ? "from-red-500 to-red-700" : "from-green-500 to-green-700";
 
             return (
               <div
-                key={item.week}
-                className="flex-1 flex flex-col items-center justify-end relative"
+                key={`${item.date}-${index}`}
+                className="min-w-12 flex-1 flex flex-col items-center justify-end relative"
                 onMouseEnter={() => setHovered(item)}
                 onMouseLeave={() => setHovered(null)}
               >
                 {active && (
-                  <div className="absolute bottom-full mb-2 z-20 w-32 rounded-xl bg-gray-900/80 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
-                    <p className="font-bold mb-1">{item.day || item.week}</p>
+                  <div className="absolute bottom-full mb-2 z-20 w-36 rounded-xl bg-gray-900/80 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
+                    <p className="font-bold mb-1">{item.day} {item.date}</p>
                     <div className="space-y-0.5">
                       <p>New: <span className="font-semibold">{item.new}</span></p>
                       <p>MBU: <span className="font-semibold">{item.mbu}</span></p>
@@ -131,12 +116,12 @@ function WeeklyEnrollmentChart({ data }) {
                   </div>
                 )}
 
-                <div className="text-sm font-bold text-gray-700 mb-2">{item.total}</div>
+                <div className="text-xs font-bold text-gray-700 mb-2">{item.total}</div>
                 <div
-                  className={`w-full max-w-24 rounded-t-2xl bg-gradient-to-t ${colors[index % colors.length]} shadow-md transition-all ${active ? "scale-105" : ""}`}
+                  className={`w-full max-w-16 rounded-t-2xl bg-gradient-to-t ${candleColor} shadow-md transition-all ${active ? "scale-105" : ""}`}
                   style={{ height: `${height}px` }}
                 />
-                <p className="text-xs text-gray-500 mt-3 font-medium">{item.day || item.week}</p>
+                <p className="text-xs text-gray-500 mt-3 font-medium">{item.label}</p>
               </div>
             );
           })}
@@ -264,26 +249,24 @@ export default function StaffAnalytics() {
   const { userId } = useParams();
   const navigate = useNavigate();
 
-  const [range, setRange] = useState("1week");
   const [category, setCategory] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState({ category: "all", fromDate: "", toDate: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [data, setData] = useState(null);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
-    params.set("range", range);
-    params.set("category", category);
+    params.set("range", "custom");
+    params.set("category", appliedFilters.category);
 
-    if (range === "custom") {
-      if (fromDate) params.set("from_date", fromDate);
-      if (toDate) params.set("to_date", toDate);
-    }
+    if (appliedFilters.fromDate) params.set("from_date", appliedFilters.fromDate);
+    if (appliedFilters.toDate) params.set("to_date", appliedFilters.toDate);
 
     return params.toString();
-  }, [range, category, fromDate, toDate]);
+  }, [appliedFilters]);
 
   const loadAnalytics = async () => {
     try {
@@ -339,7 +322,7 @@ export default function StaffAnalytics() {
 
   const summary = data?.summary || {};
   const staff = data?.staff || {};
-  const weekly = data?.weekly_enrollment || [];
+  const weekly = data?.daily_chart || data?.weekly_enrollment || [];
   const dailyReports = data?.daily_reports || [];
   const rawTarget = data?.monthly_target || {};
   const target = {
@@ -449,52 +432,49 @@ export default function StaffAnalytics() {
               <h2 className="text-lg font-bold text-gray-800">Date Filter</h2>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {RANGE_OPTIONS.map((item) => (
-                <button
-                  key={item.value}
-                  onClick={() => setRange(item.value)}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                    range === item.value
-                      ? "bg-sky-200 text-sky-900 shadow-md border border-sky-300"
-                      : "bg-sky-50 text-sky-700 border border-sky-100 hover:bg-sky-100"
-                  }`}
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="border px-4 py-2 rounded-xl bg-white"
                 >
-                  {item.label}
-                </button>
-              ))}
+                  {CATEGORY_OPTIONS.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  setFromDate(e.target.value);
-                  setRange("custom");
-                }}
-                className="border px-4 py-2 rounded-xl"
-              />
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">From</label>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="border px-4 py-2 rounded-xl"
+                />
+              </div>
 
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  setToDate(e.target.value);
-                  setRange("custom");
-                }}
-                className="border px-4 py-2 rounded-xl"
-              />
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1">To</label>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="border px-4 py-2 rounded-xl"
+                />
+              </div>
 
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="border px-4 py-2 rounded-xl"
+              <button
+                type="button"
+                onClick={() => setAppliedFilters({ category, fromDate, toDate })}
+                className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-xl font-bold shadow-sm"
               >
-                {CATEGORY_OPTIONS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
+                GO
+              </button>
             </div>
           </div>
 
