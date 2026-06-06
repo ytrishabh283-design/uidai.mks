@@ -66,8 +66,6 @@ function InfoItem({ label, value }) {
 
 function WeeklyEnrollmentChart({ data }) {
   const [hovered, setHovered] = useState(null);
-  const maxTotal = Math.max(...data.map((item) => item.total || 0), 1);
-
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
       <div className="flex items-center justify-between mb-6">
@@ -87,10 +85,18 @@ function WeeklyEnrollmentChart({ data }) {
           No enrollment data found
         </div>
       ) : (
-        <div className="relative h-80 flex items-end gap-3 px-2 pt-8 pb-8 border-b border-gray-200 overflow-x-auto">
-          {data.map((item, index) => {
-            const total = Number(item.total || 0);
-            const height = Math.max(12, Math.round((total / maxTotal) * 230));
+        <div className="flex h-80 gap-3">
+          <div className="w-10 flex flex-col justify-between text-[11px] font-semibold text-gray-500 pr-2 border-r border-gray-100">
+            {[100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0].map((tick) => (
+              <span key={tick} className="leading-none text-right">{tick}</span>
+            ))}
+          </div>
+
+          <div className="relative flex-1 flex items-end gap-3 px-2 pt-8 pb-8 border-b border-gray-200 overflow-x-auto">
+            {data.map((item, index) => {
+              const total = Number(item.total || 0);
+              const cappedTotal = Math.min(total, 100);
+              const height = Math.max(12, Math.round((cappedTotal / 100) * 230));
             const active = hovered?.date === item.date;
             const candleColor = total <= 15 ? "from-red-500 to-red-700" : "from-green-500 to-green-700";
 
@@ -124,7 +130,8 @@ function WeeklyEnrollmentChart({ data }) {
                 <p className="text-xs text-gray-500 mt-3 font-medium">{item.label}</p>
               </div>
             );
-          })}
+            })}
+          </div>
         </div>
       )}
     </div>
@@ -320,6 +327,31 @@ export default function StaffAnalytics() {
   };
 
 
+  const applyDateFilter = () => {
+    if (fromDate && toDate) {
+      const start = new Date(fromDate);
+      const end = new Date(toDate);
+
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        alert("Please select valid From and To dates");
+        return;
+      }
+
+      if (end < start) {
+        alert("To date From date se pehle nahi ho sakta");
+        return;
+      }
+
+      const diffDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+      if (diffDays > 30) {
+        alert("Maximum 30 days date range allowed");
+        return;
+      }
+    }
+
+    setAppliedFilters({ category, fromDate, toDate });
+  };
+
   const summary = data?.summary || {};
   const staff = data?.staff || {};
   const weekly = data?.daily_chart || data?.weekly_enrollment || [];
@@ -470,7 +502,7 @@ export default function StaffAnalytics() {
 
               <button
                 type="button"
-                onClick={() => setAppliedFilters({ category, fromDate, toDate })}
+                onClick={applyDateFilter}
                 className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-xl font-bold shadow-sm"
               >
                 GO
