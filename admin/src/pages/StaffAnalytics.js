@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import {
@@ -99,8 +99,43 @@ function InfoItem({ label, value }) {
 
 function WeeklyEnrollmentChart({ data }) {
   const [hovered, setHovered] = useState(null);
+  const [dragMode, setDragMode] = useState(false);
+  const scrollRef = useRef(null);
+  const dragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 });
+
   const ticks = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
   const chartHeight = 280;
+  const barWidth = 44;
+  const itemWidth = 74;
+  const chartWidth = Math.max((data?.length || 0) * itemWidth, 720);
+
+  const enableDragMode = () => {
+    setDragMode(true);
+  };
+
+  const handlePointerDown = (event) => {
+    if (!dragMode || !scrollRef.current) return;
+
+    dragState.current = {
+      isDragging: true,
+      startX: event.clientX,
+      scrollLeft: scrollRef.current.scrollLeft,
+    };
+
+    scrollRef.current.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!dragMode || !dragState.current.isDragging || !scrollRef.current) return;
+
+    const dx = event.clientX - dragState.current.startX;
+    scrollRef.current.scrollLeft = dragState.current.scrollLeft - dx;
+  };
+
+  const stopDragging = (event) => {
+    dragState.current.isDragging = false;
+    scrollRef.current?.releasePointerCapture?.(event.pointerId);
+  };
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
@@ -113,7 +148,16 @@ function WeeklyEnrollmentChart({ data }) {
           <p className="text-sm text-gray-500 mt-1">
             Fixed 0-100 scale. Hover par New, MBU, BIO aur DEM detail dikhega.
           </p>
+          <p className="text-xs text-slate-400 mt-1">
+            Graph par double click karke drag-scroll enable karein.
+          </p>
         </div>
+
+        {dragMode && (
+          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">
+            Drag scroll enabled
+          </span>
+        )}
       </div>
 
       {data.length === 0 ? (
@@ -121,22 +165,36 @@ function WeeklyEnrollmentChart({ data }) {
           No enrollment data found
         </div>
       ) : (
-        <div className="overflow-x-auto pb-2">
-          <div className="min-w-[760px]">
-            <div className="flex">
-              <div className="w-12 shrink-0 relative" style={{ height: `${chartHeight}px` }}>
-                {ticks.map((tick) => (
-                  <div
-                    key={tick}
-                    className="absolute right-2 text-[11px] font-semibold text-slate-500"
-                    style={{ top: `${((100 - tick) / 100) * chartHeight}px`, transform: "translateY(-50%)" }}
-                  >
-                    {tick}
-                  </div>
-                ))}
+        <div className="flex items-start">
+          {/* Fixed Y-axis */}
+          <div className="w-12 shrink-0 relative pr-3" style={{ height: `${chartHeight}px` }}>
+            {ticks.map((tick) => (
+              <div
+                key={tick}
+                className="absolute right-2 text-[11px] font-semibold text-slate-500"
+                style={{ top: `${((100 - tick) / 100) * chartHeight}px`, transform: "translateY(-50%)" }}
+              >
+                {tick}
               </div>
+            ))}
+          </div>
 
-              <div className="flex-1">
+          {/* Scrollable chart only */}
+          <div className="flex-1 min-w-0">
+            <div
+              ref={scrollRef}
+              onDoubleClick={enableDragMode}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={stopDragging}
+              onPointerCancel={stopDragging}
+              onPointerLeave={stopDragging}
+              className={`overflow-x-auto pb-1 select-none [&::-webkit-scrollbar]:hidden ${
+                dragMode ? "cursor-grab active:cursor-grabbing" : "cursor-default"
+              }`}
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none", touchAction: dragMode ? "none" : "pan-x" }}
+            >
+              <div style={{ width: `${chartWidth}px` }}>
                 <div
                   className="relative border-l border-b border-slate-300 bg-white"
                   style={{ height: `${chartHeight}px` }}
@@ -149,28 +207,34 @@ function WeeklyEnrollmentChart({ data }) {
                     />
                   ))}
 
-                  <div className="absolute inset-0 flex items-end gap-3 px-3">
+                  <div className="absolute inset-0 flex items-end px-2" style={{ gap: "8px" }}>
                     {data.map((item, index) => {
                       const cappedTotal = Math.max(0, Math.min(Number(item.total || 0), 100));
                       const height = Math.round((cappedTotal / 100) * chartHeight);
                       const active = hovered?.date === item.date;
+                      const isRightSide = index > data.length - 4;
 
                       return (
                         <div
                           key={item.date || index}
-                          className="h-full flex-1 flex items-end justify-center relative"
+                          className="h-full flex items-end justify-center relative shrink-0"
+                          style={{ width: `${itemWidth}px` }}
                           onMouseEnter={() => setHovered(item)}
                           onMouseLeave={() => setHovered(null)}
                         >
                           {active && (
-                            <div className="absolute bottom-full mb-2 z-30 w-36 rounded-xl bg-slate-900/85 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
-                              <p className="font-bold mb-1">{item.day_name ? `${item.day_name} ` : ""}{item.full_date || item.date}</p>
+                            <div
+                              className={`absolute bottom-full mb-2 z-30 w-36 rounded-xl bg-slate-700/95 text-white p-3 shadow-xl text-[11px] leading-snug ${
+                                isRightSide ? "right-0" : "left-1/2 -translate-x-1/2"
+                              }`}
+                            >
+                              <p className="font-bold mb-2">{item.day_name ? `${item.day_name} ` : ""}{item.full_date || item.date}</p>
                               <div className="space-y-0.5">
                                 <p>New: <span className="font-semibold">{item.new || 0}</span></p>
                                 <p>MBU: <span className="font-semibold">{item.mbu || 0}</span></p>
                                 <p>BIO: <span className="font-semibold">{item.bio || 0}</span></p>
                                 <p>DEM: <span className="font-semibold">{item.dem || 0}</span></p>
-                                <div className="border-t border-white/20 pt-1 mt-1">
+                                <div className="border-t border-white/20 pt-2 mt-2">
                                   Total: <span className="font-bold">{item.total || 0}</span>
                                 </div>
                               </div>
@@ -178,14 +242,17 @@ function WeeklyEnrollmentChart({ data }) {
                           )}
 
                           {height > 0 && (
-                            <div className="absolute bottom-0 text-[11px] font-bold text-slate-700" style={{ transform: `translateY(-${height + 6}px)` }}>
+                            <div
+                              className="absolute bottom-0 text-sm font-bold text-slate-700"
+                              style={{ transform: `translateY(-${height + 8}px)` }}
+                            >
                               {item.total}
                             </div>
                           )}
 
                           <div
-                            className="w-8 md:w-10 rounded-t-md bg-emerald-500 shadow-sm transition-transform"
-                            style={{ height: `${height}px` }}
+                            className="rounded-t-lg bg-emerald-500 shadow-sm transition-transform"
+                            style={{ width: `${barWidth}px`, height: `${height}px` }}
                           />
                         </div>
                       );
@@ -193,9 +260,13 @@ function WeeklyEnrollmentChart({ data }) {
                   </div>
                 </div>
 
-                <div className="flex gap-3 px-3 mt-3">
+                <div className="flex px-2 mt-3" style={{ gap: "8px" }}>
                   {data.map((item, index) => (
-                    <div key={item.date || index} className="flex-1 text-center text-xs font-semibold text-slate-600">
+                    <div
+                      key={item.date || index}
+                      className="shrink-0 text-center text-xs font-semibold text-slate-600"
+                      style={{ width: `${itemWidth}px` }}
+                    >
                       {item.label || item.day || item.week || "-"}
                     </div>
                   ))}
