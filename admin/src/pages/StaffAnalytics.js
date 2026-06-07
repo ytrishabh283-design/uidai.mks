@@ -16,11 +16,44 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const RANGE_OPTIONS = [
+  { label: "1 Week", value: "1week" },
+  { label: "2 Week", value: "2week" },
+  { label: "3 Week", value: "3week" },
+  { label: "4 Week", value: "4week" },
+  { label: "Custom", value: "custom" },
+];
+
 const CATEGORY_OPTIONS = [
   { label: "All", value: "all" },
   { label: "ECMP", value: "ECMP" },
   { label: "UC", value: "UC" },
 ];
+
+function toISODate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function defaultFromDate() {
+  const d = new Date();
+  d.setDate(d.getDate() - 5);
+  return toISODate(d);
+}
+
+function defaultToDate() {
+  return toISODate(new Date());
+}
+
+function isDateRangeMoreThan30Days(fromDate, toDate) {
+  if (!fromDate || !toDate) return false;
+  const start = new Date(fromDate);
+  const end = new Date(toDate);
+  const diffDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
+  return diffDays > 30;
+}
 
 function formatCurrency(value) {
   const amount = Number(value || 0);
@@ -66,8 +99,8 @@ function InfoItem({ label, value }) {
 
 function WeeklyEnrollmentChart({ data }) {
   const [hovered, setHovered] = useState(null);
-  const PLOT_HEIGHT = 260;
   const ticks = [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0];
+  const chartHeight = 280;
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-6">
@@ -78,7 +111,7 @@ function WeeklyEnrollmentChart({ data }) {
             Daily Enrollment Chart
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            Total 15 ya kam ho to red candle, 16 ya zyada ho to green candle.
+            Fixed 0-100 scale. Hover par New, MBU, BIO aur DEM detail dikhega.
           </p>
         </div>
       </div>
@@ -88,89 +121,85 @@ function WeeklyEnrollmentChart({ data }) {
           No enrollment data found
         </div>
       ) : (
-        <div className="flex gap-3">
-          {/* Fixed 0-100 Y-axis */}
-          <div className="w-11 shrink-0 pt-2 pb-8">
-            <div
-              className="relative border-r border-slate-200 text-[11px] font-semibold text-slate-500"
-              style={{ height: `${PLOT_HEIGHT}px` }}
-            >
-              {ticks.map((tick) => (
-                <span
-                  key={tick}
-                  className="absolute right-2 -translate-y-1/2 leading-none"
-                  style={{ top: `${100 - tick}%` }}
-                >
-                  {tick}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Plot area: candle height is calculated on same 0-100 axis */}
-          <div className="flex-1 overflow-x-auto pb-1">
-            <div className="relative min-w-full pt-2 pb-8 border-b border-slate-300" style={{ height: `${PLOT_HEIGHT + 40}px` }}>
-              {/* horizontal grid lines aligned with Y-axis ticks */}
-              <div className="absolute left-0 right-0 top-2 pointer-events-none" style={{ height: `${PLOT_HEIGHT}px` }}>
+        <div className="overflow-x-auto pb-2">
+          <div className="min-w-[760px]">
+            <div className="flex">
+              <div className="w-12 shrink-0 relative" style={{ height: `${chartHeight}px` }}>
                 {ticks.map((tick) => (
                   <div
                     key={tick}
-                    className="absolute left-0 right-0 border-t border-slate-100"
-                    style={{ top: `${100 - tick}%` }}
-                  />
+                    className="absolute right-2 text-[11px] font-semibold text-slate-500"
+                    style={{ top: `${((100 - tick) / 100) * chartHeight}px`, transform: "translateY(-50%)" }}
+                  >
+                    {tick}
+                  </div>
                 ))}
               </div>
 
-              <div className="relative z-10 flex items-end gap-3 h-full pr-2">
-                {data.map((item, index) => {
-                  const total = Number(item.total || 0);
-                  const cappedTotal = Math.min(total, 100);
-                  const height = Math.max(total > 0 ? 4 : 0, Math.round((cappedTotal / 100) * PLOT_HEIGHT));
-                  const active = hovered?.date === item.date;
-                  const candleColor = total <= 15 ? "bg-[#ef4444]" : "bg-[#18c653]";
-
-                  return (
+              <div className="flex-1">
+                <div
+                  className="relative border-l border-b border-slate-300 bg-white"
+                  style={{ height: `${chartHeight}px` }}
+                >
+                  {ticks.map((tick) => (
                     <div
-                      key={`${item.date}-${index}`}
-                      className="min-w-12 flex-1 flex flex-col items-center justify-end relative"
-                      style={{ height: `${PLOT_HEIGHT + 32}px` }}
-                      onMouseEnter={() => setHovered(item)}
-                      onMouseLeave={() => setHovered(null)}
-                    >
-                      {active && (
-                        <div className="absolute bottom-full mb-2 z-20 w-36 rounded-xl bg-gray-900/80 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
-                          <p className="font-bold mb-1">{item.day} {item.date}</p>
-                          <div className="space-y-0.5">
-                            <p>New: <span className="font-semibold">{item.new}</span></p>
-                            <p>MBU: <span className="font-semibold">{item.mbu}</span></p>
-                            <p>BIO: <span className="font-semibold">{item.bio}</span></p>
-                            <p>DEM: <span className="font-semibold">{item.dem}</span></p>
-                            <div className="border-t border-white/20 pt-1 mt-1">
-                              Total: <span className="font-bold">{item.total}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      key={tick}
+                      className="absolute left-0 right-0 border-t border-slate-100"
+                      style={{ top: `${((100 - tick) / 100) * chartHeight}px` }}
+                    />
+                  ))}
 
-                      <div
-                        className="relative w-full flex justify-center"
-                        style={{ height: `${PLOT_HEIGHT}px` }}
-                      >
+                  <div className="absolute inset-0 flex items-end gap-3 px-3">
+                    {data.map((item, index) => {
+                      const cappedTotal = Math.max(0, Math.min(Number(item.total || 0), 100));
+                      const height = Math.round((cappedTotal / 100) * chartHeight);
+                      const active = hovered?.date === item.date;
+
+                      return (
                         <div
-                          className="absolute text-xs font-bold text-gray-700"
-                          style={{ bottom: `${Math.min(height + 4, PLOT_HEIGHT - 4)}px` }}
+                          key={item.date || index}
+                          className="h-full flex-1 flex items-end justify-center relative"
+                          onMouseEnter={() => setHovered(item)}
+                          onMouseLeave={() => setHovered(null)}
                         >
-                          {item.total}
+                          {active && (
+                            <div className="absolute bottom-full mb-2 z-30 w-36 rounded-xl bg-slate-900/85 backdrop-blur-sm text-white p-2 shadow-xl text-[10px] leading-tight">
+                              <p className="font-bold mb-1">{item.day_name ? `${item.day_name} ` : ""}{item.full_date || item.date}</p>
+                              <div className="space-y-0.5">
+                                <p>New: <span className="font-semibold">{item.new || 0}</span></p>
+                                <p>MBU: <span className="font-semibold">{item.mbu || 0}</span></p>
+                                <p>BIO: <span className="font-semibold">{item.bio || 0}</span></p>
+                                <p>DEM: <span className="font-semibold">{item.dem || 0}</span></p>
+                                <div className="border-t border-white/20 pt-1 mt-1">
+                                  Total: <span className="font-bold">{item.total || 0}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {height > 0 && (
+                            <div className="absolute bottom-0 text-[11px] font-bold text-slate-700" style={{ transform: `translateY(-${height + 6}px)` }}>
+                              {item.total}
+                            </div>
+                          )}
+
+                          <div
+                            className="w-8 md:w-10 rounded-t-md bg-emerald-500 shadow-sm transition-transform"
+                            style={{ height: `${height}px` }}
+                          />
                         </div>
-                        <div
-                          className={`absolute bottom-0 w-full max-w-16 ${candleColor} transition-all ${active ? "scale-x-105" : ""}`}
-                          style={{ height: `${height}px` }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-3 font-medium h-4">{item.label}</p>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 px-3 mt-3">
+                  {data.map((item, index) => (
+                    <div key={item.date || index} className="flex-1 text-center text-xs font-semibold text-slate-600">
+                      {item.label || item.day || item.week || "-"}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -298,24 +327,26 @@ export default function StaffAnalytics() {
   const { userId } = useParams();
   const navigate = useNavigate();
 
+  const [range] = useState("custom");
   const [category, setCategory] = useState("all");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [appliedFilters, setAppliedFilters] = useState({ category: "all", fromDate: "", toDate: "" });
+  const [fromDate, setFromDate] = useState(defaultFromDate());
+  const [toDate, setToDate] = useState(defaultToDate());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [data, setData] = useState(null);
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
-    params.set("range", "custom");
-    params.set("category", appliedFilters.category);
+    params.set("range", range);
+    params.set("category", category);
 
-    if (appliedFilters.fromDate) params.set("from_date", appliedFilters.fromDate);
-    if (appliedFilters.toDate) params.set("to_date", appliedFilters.toDate);
+    if (range === "custom") {
+      if (fromDate) params.set("from_date", fromDate);
+      if (toDate) params.set("to_date", toDate);
+    }
 
     return params.toString();
-  }, [appliedFilters]);
+  }, [range, category, fromDate, toDate]);
 
   const loadAnalytics = async () => {
     try {
@@ -339,7 +370,27 @@ export default function StaffAnalytics() {
 
   useEffect(() => {
     loadAnalytics();
-  }, [queryString, userId]);
+    // eslint-disable-next-line
+  }, [userId]);
+
+  const handleGo = () => {
+    if (!fromDate || !toDate) {
+      alert("Please select From Date and To Date");
+      return;
+    }
+
+    if (new Date(fromDate) > new Date(toDate)) {
+      alert("From Date cannot be greater than To Date");
+      return;
+    }
+
+    if (isDateRangeMoreThan30Days(fromDate, toDate)) {
+      alert("Maximum 30 days date range allowed");
+      return;
+    }
+
+    loadAnalytics();
+  };
 
 
   const handleReportDownload = async (reportId) => {
@@ -369,34 +420,9 @@ export default function StaffAnalytics() {
   };
 
 
-  const applyDateFilter = () => {
-    if (fromDate && toDate) {
-      const start = new Date(fromDate);
-      const end = new Date(toDate);
-
-      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-        alert("Please select valid From and To dates");
-        return;
-      }
-
-      if (end < start) {
-        alert("To date From date se pehle nahi ho sakta");
-        return;
-      }
-
-      const diffDays = Math.floor((end - start) / (1000 * 60 * 60 * 24));
-      if (diffDays > 30) {
-        alert("Maximum 30 days date range allowed");
-        return;
-      }
-    }
-
-    setAppliedFilters({ category, fromDate, toDate });
-  };
-
   const summary = data?.summary || {};
   const staff = data?.staff || {};
-  const weekly = data?.daily_chart || data?.weekly_enrollment || [];
+  const weekly = data?.daily_chart_data || data?.weekly_enrollment || [];
   const dailyReports = data?.daily_reports || [];
   const rawTarget = data?.monthly_target || {};
   const target = {
@@ -508,7 +534,7 @@ export default function StaffAnalytics() {
 
             <div className="flex flex-wrap items-end gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1">Category</label>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -523,7 +549,7 @@ export default function StaffAnalytics() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1">From</label>
+                <label className="block text-xs font-bold text-slate-500 mb-1">From</label>
                 <input
                   type="date"
                   value={fromDate}
@@ -533,7 +559,7 @@ export default function StaffAnalytics() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-500 mb-1">To</label>
+                <label className="block text-xs font-bold text-slate-500 mb-1">To</label>
                 <input
                   type="date"
                   value={toDate}
@@ -544,12 +570,16 @@ export default function StaffAnalytics() {
 
               <button
                 type="button"
-                onClick={applyDateFilter}
+                onClick={handleGo}
                 className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-2 rounded-xl font-bold shadow-sm"
               >
                 GO
               </button>
             </div>
+
+            <p className="text-xs text-slate-400 mt-3">
+              Maximum 30 days date range allowed. Joining date se pehle candle nahi banega.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
