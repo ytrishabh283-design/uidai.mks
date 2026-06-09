@@ -99,6 +99,7 @@ function InfoItem({ label, value }) {
 
 function WeeklyEnrollmentChart({ data }) {
   const [hovered, setHovered] = useState(null);
+  const hoverTimeout = useRef(null);
   const [dragMode, setDragMode] = useState(false);
   const scrollRef = useRef(null);
   const dragState = useRef({ isDragging: false, startX: 0, scrollLeft: 0 });
@@ -114,6 +115,9 @@ function WeeklyEnrollmentChart({ data }) {
   };
 
   const handlePointerDown = (event) => {
+    clearTimeout(hoverTimeout.current);
+    setHovered(null);
+
     if (!dragMode || !scrollRef.current) return;
 
     dragState.current = {
@@ -219,12 +223,20 @@ function WeeklyEnrollmentChart({ data }) {
                           key={item.date || index}
                           className="h-full flex items-end justify-center relative shrink-0"
                           style={{ width: `${itemWidth}px` }}
-                          onMouseEnter={() => setHovered(item)}
-                          onMouseLeave={() => setHovered(null)}
+                          onMouseEnter={() => {
+                            if (dragState.current.isDragging) return;
+                            clearTimeout(hoverTimeout.current);
+                            setHovered(item);
+                          }}
+                          onMouseLeave={() => {
+                            hoverTimeout.current = setTimeout(() => {
+                              setHovered(null);
+                            }, 120);
+                          }}
                         >
                           {active && (
                             <div
-                              className={`absolute bottom-full mb-2 z-30 w-36 rounded-xl bg-slate-700/95 text-white p-3 shadow-xl text-[11px] leading-snug ${
+                              className={`absolute bottom-full mb-2 z-30 w-40 rounded-xl bg-slate-800/95 backdrop-blur-sm text-white p-3 shadow-xl text-[11px] leading-snug ${
                                 isRightSide ? "right-0" : "left-1/2 -translate-x-1/2"
                               }`}
                             >
