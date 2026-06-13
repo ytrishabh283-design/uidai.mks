@@ -62,7 +62,41 @@ export default function Reports() {
                   {report.status}
                 </span>
 
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                <button
+                  onClick={async () => {
+                    try {
+                      if (report.name === "Staff Performance Report") {
+                        const token = localStorage.getItem("token");
+                        const response = await fetch(
+                          `${process.env.REACT_APP_API_URL}/api/admin/master-report/download`,
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        );
+
+                        if (!response.ok) {
+                          throw new Error("Download failed");
+                        }
+
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = "Master_Report.zip";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      alert("Unable to download master report");
+                    }
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+                >
                   Download
                 </button>
               </div>
