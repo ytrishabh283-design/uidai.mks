@@ -9,6 +9,9 @@ export default function Users() {
     email: "",
     brc: "",
     district: "",
+    aadhaar: "",
+    mobile: "",
+    station_id: "",
     password: "",
     joining_date: "",
     is_active: true,
@@ -64,6 +67,9 @@ export default function Users() {
         email: form.email.trim() || null,
         brc: form.brc.trim() || null,
         district: form.district.trim() || null,
+        aadhaar: form.aadhaar.trim() || null,
+        mobile: form.mobile.trim() || null,
+        station_id: form.station_id.trim() || null,
         joining_date: form.joining_date || null,
         is_active: form.is_active,
       };
@@ -98,6 +104,9 @@ export default function Users() {
       email: user.email || "",
       brc: user.brc || "",
       district: user.district || "",
+      aadhaar: user.aadhaar || "",
+      mobile: user.mobile || "",
+      station_id: user.station_id || "",
       password: "",
       joining_date: user.joining_date || "",
       is_active: user.is_active ?? true,
@@ -187,6 +196,30 @@ export default function Users() {
             value={form.district}
             onChange={handleChange}
             placeholder="District"
+            className="border px-4 py-3 rounded-xl"
+          />
+
+          <input
+            name="aadhaar"
+            value={form.aadhaar}
+            onChange={handleChange}
+            placeholder="Aadhar No"
+            className="border px-4 py-3 rounded-xl"
+          />
+
+          <input
+            name="mobile"
+            value={form.mobile}
+            onChange={handleChange}
+            placeholder="Mobile No"
+            className="border px-4 py-3 rounded-xl"
+          />
+
+          <input
+            name="station_id"
+            value={form.station_id}
+            onChange={handleChange}
+            placeholder="Station ID"
             className="border px-4 py-3 rounded-xl"
           />
 
